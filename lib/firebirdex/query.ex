@@ -2,6 +2,8 @@ defmodule Firebirdex.Query do
   require Record
   Record.defrecord :stmt, Record.extract(:stmt, from_lib: "efirebirdsql/include/efirebirdsql.hrl")
 
+  alias Firebirdex.Result
+
   @type t :: %__MODULE__{
           ref:  reference() | nil,
           name: iodata(),
