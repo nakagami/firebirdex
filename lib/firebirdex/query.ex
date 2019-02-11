@@ -34,17 +34,16 @@ defmodule Firebirdex.Query do
       params
     end
 
-    defp convert(v) do
+    defp convert_value(v) do
       v
     end
 
     defp convert_row(row) do
-      row |> Enum.map(fn(x) -> convert(x) end)
+      Enum.map(row, &(convert_value(&1)))
     end
 
     def decode(_query, result, _opts) do
-      converted = result.rows |> Enum.map(fn(x) -> convert_row(x) end)
-      %Result{result | rows: converted}
+      %Result{result | rows: Enum.map(result.rows, &(convert_row(&1)))}
     end
   end
 
