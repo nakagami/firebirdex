@@ -1,9 +1,6 @@
 defmodule Firebirdex.Protocol do
   @moduledoc false
-  require Record
   use DBConnection
-  Record.defrecord :conn, Record.extract(:conn, from_lib: "efirebirdsql/include/efirebirdsql.hrl")
-  Record.defrecord :stmt, Record.extract(:stmt, from_lib: "efirebirdsql/include/efirebirdsql.hrl")
 
   alias Firebirdex.{Query, Result}
 

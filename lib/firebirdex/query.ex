@@ -1,7 +1,4 @@
 defmodule Firebirdex.Query do
-  require Record
-  Record.defrecord :stmt, Record.extract(:stmt, from_lib: "efirebirdsql/include/efirebirdsql.hrl")
-
   alias Firebirdex.Result
 
   @type t :: %__MODULE__{
@@ -34,7 +31,7 @@ defmodule Firebirdex.Query do
       params
     end
 
-    defp convert_value({name, v}) do
+    defp convert_value({_name, v}) do
       v
     end
 
