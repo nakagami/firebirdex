@@ -6,7 +6,19 @@ defmodule FirebirdexTest do
   describe "connect" do
     opts = @opts
     {:ok, conn} = Firebirdex.start_link(opts)
-    {:ok, %Firebirdex.Result{}} = Firebirdex.query(conn, "SELECT 1 AS C FROM RDB$RELATIONS", [])
+    {:ok, %Firebirdex.Result{} = result} = Firebirdex.query(conn,
+      "SELECT
+        1 AS a,
+        CAST('Str' AS VARCHAR(3)) AS b,
+        1.23 AS c,
+        CAST(1.23 AS DOUBLE PRECISION) AS d,
+        NULL AS E
+        FROM RDB$DATABASE", [])
+
+    IO.inspect result.columns
+    IO.inspect result.rows
+    assert result.columns == ["A", "B", "C", "D", "E"]
+    assert result.rows == [[1, "Str", '1.23', 1.23, :nil]]
   end
 
 end

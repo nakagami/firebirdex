@@ -34,7 +34,7 @@ defmodule Firebirdex.Query do
       params
     end
 
-    defp convert_value(v) do
+    defp convert_value({name, v}) do
       v
     end
 
