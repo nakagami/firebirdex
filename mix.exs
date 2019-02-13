@@ -34,7 +34,7 @@ defmodule Firebirdex.Mixfile do
     [
       {:db_connection, "~> 2.0"},
       {:decimal, "~> 1.6"},
-      {:efirebirdsql, "~> 0.5.2"},
+      {:efirebirdsql, "~> 0.5.3"},
     ]
   end
 
