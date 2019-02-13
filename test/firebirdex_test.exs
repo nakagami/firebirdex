@@ -15,8 +15,6 @@ defmodule FirebirdexTest do
         NULL AS E
         FROM RDB$DATABASE", [])
 
-    IO.inspect result.columns
-    IO.inspect result.rows
     assert result.columns == ["A", "B", "C", "D", "E"]
     assert result.rows == [[1, "Str", '1.23', 1.23, :nil]]
   end
