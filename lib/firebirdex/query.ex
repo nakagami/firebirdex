@@ -31,16 +31,30 @@ defmodule Firebirdex.Query do
       params
     end
 
-    defp convert_value({_name, v}) do
+    defp column_type({_name, t, _scale, _length, _isnull}) do
+      t
+    end
+
+    defp convert_value(:int64, {_name, v}) do
+      Decimal.new(to_string(v))
+    end
+    defp convert_value(_t, {_name, v}) do
       v
     end
 
-    defp convert_row(row) do
-      Enum.map(row, &(convert_value(&1)))
+    defp convert_row(row, [], []) do
+      Enum.reverse(row)
     end
 
-    def decode(_query, result, _opts) do
-      %Result{result | rows: Enum.map(result.rows, &(convert_row(&1)))}
+    defp convert_row(row, rest_columns, rest_row) do
+      [c | rest_columns] = rest_columns
+      [v | rest_row] = rest_row
+      convert_row([convert_value(column_type(c), v) | row], rest_columns, rest_row)
+    end
+
+    def decode(query, result, _opts) do
+      columns = :efirebirdsql_protocol.columns(query.stmt)
+      %Result{result | rows: Enum.map(result.rows, &(convert_row([], columns, &1)))}
     end
   end
 

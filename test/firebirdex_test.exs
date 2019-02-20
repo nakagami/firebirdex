@@ -16,7 +16,7 @@ defmodule FirebirdexTest do
         FROM RDB$DATABASE", [])
 
     assert result.columns == ["A", "B", "C", "D", "E"]
-    assert result.rows == [[1, "Str", '1.23', 1.23, :nil]]
+    assert result.rows == [[1, "Str", Decimal.new("1.23"), 1.23, :nil]]
   end
 
 end
