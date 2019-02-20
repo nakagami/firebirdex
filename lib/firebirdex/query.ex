@@ -31,25 +31,20 @@ defmodule Firebirdex.Query do
       params
     end
 
-    defp column_type({_name, t, _scale, _length, _isnull}) do
-      t
-    end
-
-    defp convert_value(:int64, {_name, v}) do
+    defp convert_value({_, :int64, _, _, _}, {_name, v}) do
       Decimal.new(to_string(v))
     end
-    defp convert_value(_t, {_name, v}) do
+    defp convert_value({_, _, _, _, _}, {_name, v}) do
       v
     end
 
     defp convert_row(row, [], []) do
       Enum.reverse(row)
     end
-
     defp convert_row(row, rest_columns, rest_row) do
       [c | rest_columns] = rest_columns
       [v | rest_row] = rest_row
-      convert_row([convert_value(column_type(c), v) | row], rest_columns, rest_row)
+      convert_row([convert_value(c, v) | row], rest_columns, rest_row)
     end
 
     def decode(query, result, _opts) do
