@@ -47,13 +47,14 @@ defmodule Firebirdex.Query do
       Date.new(YY, MM, DD)
     end
     defp convert_value({_, :time, _, _, _}, {_name, {HH, MM, SS, MS}}) do
-      NaiveDateTime.new(YY, MM, DD, HH, MM, SS, MS)
+      Time.new(HH, MM, SS, MS)
     end
     defp convert_value({_, :timestamp, _, _, _}, {_name, {{YY, MM, DD}, {HH, MM, SS, MS}}}) do
       NaiveDateTime.new(YY, MM, DD, HH, MM, SS, MS)
     end
-    defp convert_value({_, :time_tz, _, _, _}, {_name, {{HH, MM, SS, MS}, TZ}}) do
-      Time.new(HH, MM, SS, MS, TZ)
+    defp convert_value({_, :time_tz, _, _, _}, {_name, {{HH, MM, SS, MS}, _TZ}}) do
+      # TODO: timezone support
+      Time.new(HH, MM, SS, MS)
     end
     defp convert_value({_, :timestamp_tz, _, _, _}, {_name, {{YY, MM, DD}, {HH, MM, SS, MS}, TZ}}) do
       DateTime.from_naive(NaiveDateTime.new(YY, MM, DD, HH, MM, SS, MS), TZ)
