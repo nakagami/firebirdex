@@ -15,13 +15,13 @@ defmodule FirebirdexTest do
         CAST(1.23 AS DOUBLE PRECISION) AS d,
         NULL AS E
         FROM RDB$DATABASE", [])
-
     assert result.columns == ["A", "B", "C", "D", "E"]
     assert result.rows == [[1, "Str", Decimal.new("1.23"), 1.23, :nil]]
 
-    {:ok, %Firebirdex.Result{} = result2} = Firebirdex.query(conn,
+    {:ok, %Firebirdex.Result{} = result} = Firebirdex.query(conn,
       "SELECT count(*) from rdb$relations where rdb$system_flag = ?", [0])
-    assert result2.rows == [[0]]
+    assert result.rows == [[0]]
+
   end
 
 end
