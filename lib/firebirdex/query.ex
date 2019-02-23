@@ -43,21 +43,25 @@ defmodule Firebirdex.Query do
     defp convert_value({_, :quad, scale, _, _}, {_name, v}) when scale < 0 do
       Decimal.new(to_string(v))
     end
-    defp convert_value({_, :date, _, _, _}, {_name, {YY, MM, DD}}) do
-      Date.new(YY, MM, DD)
+    defp convert_value({_, :date, _, _, _}, {_name, {year, month, day}}) do
+      {:ok, v} = Date.new(year, month, day)
+      v
     end
-    defp convert_value({_, :time, _, _, _}, {_name, {HH, MM, SS, MS}}) do
-      Time.new(HH, MM, SS, MS)
+    defp convert_value({_, :time, _, _, _}, {_name, {hour, minute, second, microsecond}}) do
+      {:ok, v} = Time.new(hour, minute, second, microsecond)
+      v
     end
-    defp convert_value({_, :timestamp, _, _, _}, {_name, {{YY, MM, DD}, {HH, MM, SS, MS}}}) do
-      NaiveDateTime.new(YY, MM, DD, HH, MM, SS, MS)
+    defp convert_value({_, :timestamp, _, _, _}, {_name, {{year, month, day}, {hour, minute, second, microsecond}}}) do
+      {:ok, v} = NaiveDateTime.new(year, month, day, hour, minute, second, microsecond)
+      v
     end
-    defp convert_value({_, :time_tz, _, _, _}, {_name, {{HH, MM, SS, MS}, _TZ}}) do
+    defp convert_value({_, :time_tz, _, _, _}, {_name, {{hour, minute, second, microsecond}, _tz}}) do
       # TODO: timezone support
-      Time.new(HH, MM, SS, MS)
+      {:ok, v} = Time.new(hour, minute, second, microsecond)
+      v
     end
-    defp convert_value({_, :timestamp_tz, _, _, _}, {_name, {{YY, MM, DD}, {HH, MM, SS, MS}, TZ}}) do
-      DateTime.from_naive(NaiveDateTime.new(YY, MM, DD, HH, MM, SS, MS), TZ)
+    defp convert_value({_, :timestamp_tz, _, _, _}, {_name, {{year, month, day}, {hour, minute, second, microsecond}, tz}}) do
+      DateTime.from_naive(NaiveDateTime.new(year, month, day, hour, minute, second, microsecond), tz)
     end
     defp convert_value({_, _, _, _, _}, {_name, v}) do
       v
