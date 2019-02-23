@@ -31,8 +31,32 @@ defmodule Firebirdex.Query do
       params
     end
 
-    defp convert_value({_, :int64, _, _, _}, {_name, v}) do
+    defp convert_value({_, :long, scale, _, _}, {_name, v}) when scale < 0 do
       Decimal.new(to_string(v))
+    end
+    defp convert_value({_, :short, scale, _, _}, {_name, v}) when scale < 0 do
+      Decimal.new(to_string(v))
+    end
+    defp convert_value({_, :int64, scale, _, _}, {_name, v}) when scale < 0 do
+      Decimal.new(to_string(v))
+    end
+    defp convert_value({_, :quad, scale, _, _}, {_name, v}) when scale < 0 do
+      Decimal.new(to_string(v))
+    end
+    defp convert_value({_, :date, _, _, _}, {_name, {YY, MM, DD}}) do
+      Date.new(YY, MM, DD)
+    end
+    defp convert_value({_, :time, _, _, _}, {_name, {HH, MM, SS, MS}}) do
+      NaiveDateTime.new(YY, MM, DD, HH, MM, SS, MS)
+    end
+    defp convert_value({_, :timestamp, _, _, _}, {_name, {{YY, MM, DD}, {HH, MM, SS, MS}}}) do
+      NaiveDateTime.new(YY, MM, DD, HH, MM, SS, MS)
+    end
+    defp convert_value({_, :time_tz, _, _, _}, {_name, {{HH, MM, SS, MS}, TZ}}) do
+      Time.new(HH, MM, SS, MS, TZ)
+    end
+    defp convert_value({_, :timestamp_tz, _, _, _}, {_name, {{YY, MM, DD}, {HH, MM, SS, MS}, TZ}}) do
+      DateTime.from_naive(NaiveDateTime.new(YY, MM, DD, HH, MM, SS, MS), TZ)
     end
     defp convert_value({_, _, _, _, _}, {_name, v}) do
       v
