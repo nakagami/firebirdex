@@ -3,7 +3,7 @@ defmodule FirebirdexTest do
 
   @opts TestHelpers.opts()
 
-  describe "connect" do
+  describe "data_type" do
     opts = @opts
     {:ok, conn} = Firebirdex.start_link(opts)
 
