@@ -6,6 +6,7 @@ defmodule FirebirdexTest do
   describe "connect" do
     opts = @opts
     {:ok, conn} = Firebirdex.start_link(opts)
+
     {:ok, %Firebirdex.Result{} = result} = Firebirdex.query(conn,
       "SELECT
         1 AS a,
@@ -17,6 +18,10 @@ defmodule FirebirdexTest do
 
     assert result.columns == ["A", "B", "C", "D", "E"]
     assert result.rows == [[1, "Str", Decimal.new("1.23"), 1.23, :nil]]
+
+    {:ok, %Firebirdex.Result{} = result2} = Firebirdex.query(conn,
+      "SELECT count(*) from rdb$relations where rdb$system_flag = ?", [0])
+    assert result2.rows == [[0]]
   end
 
 end
