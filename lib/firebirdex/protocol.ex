@@ -54,12 +54,17 @@ defmodule Firebirdex.Protocol do
     {:ok, %Query{query | stmt: stmt}, %__MODULE__{state | conn: conn}}
   end
 
+  defp convert_param(param) do
+    param
+  end
+
   defp column_name({name, _type, _scale, _length, _isnull}) do
     name
   end
 
   @impl true
   def handle_execute(%Query{} = query, params, _opts, state) do
+    params = Enum.map(params, &convert_param(&1))
     {:ok, conn, stmt} = :efirebirdsql_protocol.execute(state.conn, query.stmt, params)
     {:ok, rows, conn, stmt} = :efirebirdsql_protocol.fetchall(conn, stmt)
     columns = Enum.map(:efirebirdsql_protocol.columns(stmt), &(column_name(&1)))
