@@ -21,10 +21,11 @@ defmodule FirebirdexTest do
     {:ok, %Firebirdex.Result{} = result} = Firebirdex.query(conn,
       "SELECT
         CAST('1967-08-11' AS date) AS d,
+        CAST('12:23:34.4567' AS time) AS t,
         CAST('1967-08-11 23:34:56.1234' AS timestamp) AS TS
         FROM RDB$DATABASE", [])
-    assert result.columns == ["D", "TS"]
-    assert result.rows == [[~D[1967-08-11], ~N[1967-08-11 23:34:56.123400]]]
+    assert result.columns == ["D", "T", "TS"]
+    assert result.rows == [[~D[1967-08-11], ~T[12:23:34.456700], ~N[1967-08-11 23:34:56.123400]]]
 
     {:ok, %Firebirdex.Result{} = result} = Firebirdex.query(conn,
       "SELECT count(*) from rdb$relations where rdb$system_flag = ?", [0])
