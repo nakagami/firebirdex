@@ -31,8 +31,9 @@ defmodule FirebirdexTest do
       "SELECT count(*) from rdb$relations where rdb$system_flag = ?", [0])
     assert result.rows == [[0]]
 
-
     {:error, %Firebirdex.Error{}} = Firebirdex.query(conn, "bad query", [])
+    {:error, %Firebirdex.Error{}} = Firebirdex.query(conn,
+      "SELECT * from rdb$relations where rdb$system_flag = ?", [<<"bad arg">>])
 
   end
 
