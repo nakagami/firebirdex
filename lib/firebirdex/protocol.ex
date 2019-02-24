@@ -49,9 +49,12 @@ defmodule Firebirdex.Protocol do
   @impl true
   def handle_prepare(%Query{} = query, _opts, state) do
     {:ok, conn, stmt} = :efirebirdsql_protocol.allocate_statement(state.conn)
-    {:ok, conn, stmt} = :efirebirdsql_protocol.prepare_statement(
-      query.statement, conn, stmt)
-    {:ok, %Query{query | stmt: stmt}, %__MODULE__{state | conn: conn}}
+    case :efirebirdsql_protocol.prepare_statement(query.statement, conn, stmt) do
+      {:ok, conn, stmt} ->
+        {:ok, %Query{query | stmt: stmt}, %__MODULE__{state | conn: conn}}
+      {:error, message, conn} ->
+        {:error, %Firebirdex.Error{message: message, statement: query.statement}, %__MODULE__{state | conn: conn}}
+    end
   end
 
   defp convert_param(param) do

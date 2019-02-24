@@ -3,7 +3,7 @@ defmodule FirebirdexTest do
 
   @opts TestHelpers.opts()
 
-  describe "data_type" do
+  describe "basic_test" do
     opts = @opts
     {:ok, conn} = Firebirdex.start_link(opts)
 
@@ -30,6 +30,9 @@ defmodule FirebirdexTest do
     {:ok, %Firebirdex.Result{} = result} = Firebirdex.query(conn,
       "SELECT count(*) from rdb$relations where rdb$system_flag = ?", [0])
     assert result.rows == [[0]]
+
+
+    {:error, %Firebirdex.Error{}} = Firebirdex.query(conn, "bad query", [])
 
   end
 
