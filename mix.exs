@@ -12,6 +12,7 @@ defmodule Firebirdex.Mixfile do
       description: "Firebird driver for Elixir",
       source_url: "https://github.com/nakagami/firebirdex",
       package: package(),
+      docs: docs(),
       deps: deps()
     ]
   end
