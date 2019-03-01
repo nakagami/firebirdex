@@ -30,6 +30,14 @@ defmodule Firebirdex.Mixfile do
     ]
   end
 
+  defp docs() do
+    [
+      source_ref: "v#{@version}",
+      main: "readme",
+      extras: ["README.md"]
+    ]
+  end
+
   defp deps() do
     [
       {:db_connection, "~> 2.0"},
