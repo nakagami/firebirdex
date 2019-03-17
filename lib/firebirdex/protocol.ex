@@ -19,8 +19,8 @@ defmodule Firebirdex.Protocol do
       {:ok, conn} ->
         {:ok, conn} = :efirebirdsql_protocol.begin_transaction(false, conn)
         {:ok, %__MODULE__{conn: conn}}
-      {:error, message, _conn} ->
-        {:error, %Firebirdex.Error{message: message}}
+      {:error, number, message, _conn} ->
+        {:error, %Firebirdex.Error{number: number, message: message}}
     end
   end
 
@@ -52,8 +52,8 @@ defmodule Firebirdex.Protocol do
     case :efirebirdsql_protocol.prepare_statement(query.statement, conn, stmt) do
       {:ok, conn, stmt} ->
         {:ok, %Query{query | stmt: stmt}, %__MODULE__{state | conn: conn}}
-      {:error, message, conn} ->
-        {:error, %Firebirdex.Error{message: message, statement: query.statement}, %__MODULE__{state | conn: conn}}
+      {:error, number, message, conn} ->
+        {:error, %Firebirdex.Error{number: number, message: message, statement: query.statement}, %__MODULE__{state | conn: conn}}
     end
   end
 
@@ -73,8 +73,8 @@ defmodule Firebirdex.Protocol do
       {:ok, rows, conn, stmt} = :efirebirdsql_protocol.fetchall(conn, stmt)
       columns = Enum.map(:efirebirdsql_protocol.columns(stmt), &(column_name(&1)))
       {:ok, %Query{query | stmt: stmt}, %Result{rows: rows, columns: columns}, %__MODULE__{state | conn: conn}}
-    {:error, message, conn} ->
-      {:error, %Firebirdex.Error{message: message, statement: query.statement}, %__MODULE__{state | conn: conn}}
+    {:error, number, message, conn} ->
+      {:error, %Firebirdex.Error{number: number, message: message, statement: query.statement}, %__MODULE__{state | conn: conn}}
     end
   end
 
