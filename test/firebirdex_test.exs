@@ -35,6 +35,9 @@ defmodule FirebirdexTest do
     {:error, %Firebirdex.Error{}} = Firebirdex.query(conn,
       "SELECT * from rdb$relations where rdb$system_flag = ?", [<<"bad arg">>])
 
+    {:ok, %Firebirdex.Result{} = result} = Firebirdex.query(conn,
+      ["SELECT 'a'", ?,, "'b' FROM RDB$DATABASE"], [])
+    assert result.rows == [["a", "b"]]
   end
 
 end
