@@ -50,7 +50,7 @@ defmodule Firebirdex.Protocol do
 
   @impl true
   def handle_prepare(%Query{} = query, _opts, state) do
-    Logger.debug "handle_prepare()"
+    Logger.debug "handle_prepare() #{query}"
     {:ok, conn, stmt} = :efirebirdsql_protocol.allocate_statement(state.conn)
     case :efirebirdsql_protocol.prepare_statement(to_string(query), conn, stmt) do
       {:ok, conn, stmt} ->
@@ -107,15 +107,12 @@ defmodule Firebirdex.Protocol do
     case Keyword.get(opts, :mode, :transaction) do
       :transaction when status == :idle ->
         {:ok, conn} = :efirebirdsql_protocol.begin_transaction(false, conn)
-        Logger.debug "handle_begin() 1"
         {:ok, %Result{}, %__MODULE__{conn: conn, transaction_status: :transaction}}
       :savepoint when status == :transaction ->
         # TODO: savepoint
         {:ok, conn} = :efirebirdsql_protocol.begin_transaction(false, conn)
-        Logger.debug "handle_begin() 2"
         {:ok, %Result{}, %__MODULE__{conn: conn, transaction_status: :transaction}}
       mode when mode in [:transaction, :savepoint] ->
-        Logger.debug "handle_begin() 3"
         {status, s}
     end
 
