@@ -94,21 +94,21 @@ defmodule Firebirdex.Protocol do
   end
 
   @impl true
-  def handle_begin(_opts, %{transaction_status: _status} = state) do
-    {:ok, conn} = :efirebirdsql_protocol.begin_transaction(false, state.conn)
-    {:ok, %__MODULE__{conn: conn}}
+  def handle_begin(_opts, %{conn: conn, transaction_status: _status}) do
+    {:ok, conn} = :efirebirdsql_protocol.begin_transaction(false, conn)
+    {:transaction, %__MODULE__{conn: conn, transaction_status: :transaction}}
   end
 
   @impl true
-  def handle_commit(_opts, state) do
-    {:ok, conn} = :efirebirdsql_protocol.commit(state.conn)
-    {:ok, %__MODULE__{conn: conn}}
+  def handle_commit(_opts, %{conn: conn, transaction_status: _status}) do
+    {:ok, conn} = :efirebirdsql_protocol.commit(conn)
+    {:transaction, %__MODULE__{conn: conn, transaction_status: :transaction}}
   end
 
   @impl true
-  def handle_rollback(_opts, state) do
-    {:ok, conn} = :efirebirdsql_protocol.rollback(state.conn)
-    {:ok, %__MODULE__{conn: conn}}
+  def handle_rollback(_opts, %{conn: conn, transaction_status: _status}) do
+    {:ok, conn} = :efirebirdsql_protocol.rollback(conn)
+    {:transaction, %__MODULE__{conn: conn, transaction_status: :transaction}}
   end
 
   @impl true
