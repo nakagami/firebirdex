@@ -17,7 +17,6 @@ defmodule Firebirdex.Protocol do
     database = to_charlist(opts[:database])
     case :efirebirdsql_protocol.connect(hostname, username, password, database, opts) do
       {:ok, conn} ->
-        {:ok, conn} = :efirebirdsql_protocol.begin_transaction(false, conn)
         {:ok, %__MODULE__{conn: conn}}
       {:error, number, reason, _conn} ->
         {:error, %Firebirdex.Error{number: number, reason: reason}}

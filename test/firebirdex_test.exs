@@ -56,7 +56,7 @@ defmodule FirebirdexTest do
       )", [])
     {:ok, %Firebirdex.Result{} = result} = Firebirdex.query(conn,
       "SELECT * from foo", [])
-    assert result.rows == [[]]
+    assert result.rows == []
 
   end
 end
