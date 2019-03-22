@@ -2,6 +2,8 @@ defmodule Firebirdex.Protocol do
   @moduledoc false
   use DBConnection
 
+  require Logger
+
   alias Firebirdex.{Query, Result}
 
   defstruct [
@@ -11,7 +13,6 @@ defmodule Firebirdex.Protocol do
 
   @impl true
   def connect(opts) do
-    IO.puts "connect()"
     hostname = to_charlist(opts[:hostname])
     username = to_charlist(opts[:username])
     password = to_charlist(opts[:password])
@@ -26,7 +27,7 @@ defmodule Firebirdex.Protocol do
 
   @impl true
   def disconnect(_reason, state) do
-    IO.puts "disconnect()"
+    Logger.debug "disconnect()"
     :efirebirdsql_protocol.close(state.conn)
     :ok
   end
@@ -39,19 +40,17 @@ defmodule Firebirdex.Protocol do
 
   @impl true
   def checkout(state) do
-    IO.puts "checkout()"
     {:ok, state}
   end
 
   @impl true
   def checkin(state) do
-    IO.puts "checkin()"
     {:ok, state}
   end
 
   @impl true
   def handle_prepare(%Query{} = query, _opts, state) do
-    IO.puts "handle_prepare()"
+    Logger.debug "handle_prepare()"
     {:ok, conn, stmt} = :efirebirdsql_protocol.allocate_statement(state.conn)
     case :efirebirdsql_protocol.prepare_statement(to_string(query), conn, stmt) do
       {:ok, conn, stmt} ->
@@ -71,7 +70,7 @@ defmodule Firebirdex.Protocol do
 
   @impl true
   def handle_execute(%Query{} = query, params, _opts, state) do
-    IO.puts "handle_execute()"
+    Logger.debug "handle_execute()"
     params = Enum.map(params, &convert_param(&1))
     case :efirebirdsql_protocol.execute(state.conn, query.stmt, params) do
       {:ok, conn, stmt} ->
@@ -84,54 +83,54 @@ defmodule Firebirdex.Protocol do
   end
 
   @impl true
-  def handle_close(_query, _opts, state) do
-    IO.puts "handle_close()"
-    {:ok, conn} = :efirebirdsql_protocol.close(state.conn)
+  def handle_close(_query, _opts, %{conn: conn, transaction_status: _status}) do
+    Logger.debug "handle_close()"
+    {:ok, conn} = :efirebirdsql_protocol.close(conn)
     {:ok, %__MODULE__{conn: conn}}
   end
 
   @impl true
-  def handle_status(_opts, status) do
-    IO.puts "handle_status()"
+  def handle_status(_opts, %{conn: _conn, transaction_status: status}) do
+    Logger.debug "handle_status() status=#{status}"
     {status.transaction_status, status}
   end
 
   @impl true
   def handle_declare(query, _params, _opt, state) do
-    IO.puts "handle_declare()"
+    Logger.debug "handle_declare()"
     {:ok, query, query.stmt, state}
   end
 
   @impl true
-  def handle_begin(_opts, %{conn: conn, transaction_status: _status}) do
-    IO.puts "handle_begin()"
+  def handle_begin(_opts, %{conn: conn, transaction_status: status}) do
+    Logger.debug "handle_begin() status=#{status}"
     {:ok, conn} = :efirebirdsql_protocol.begin_transaction(false, conn)
     {:transaction, %__MODULE__{conn: conn, transaction_status: :transaction}}
   end
 
   @impl true
-  def handle_commit(_opts, %{conn: conn, transaction_status: _status}) do
-    IO.puts "handle_commit()"
+  def handle_commit(_opts, %{conn: conn, transaction_status: status}) do
+    Logger.debug "handle_commit() status=#{status}"
     {:ok, conn} = :efirebirdsql_protocol.commit(conn)
     {:transaction, %__MODULE__{conn: conn, transaction_status: :transaction}}
   end
 
   @impl true
-  def handle_rollback(_opts, %{conn: conn, transaction_status: _status}) do
-    IO.puts "handle_rollback()"
+  def handle_rollback(_opts, %{conn: conn, transaction_status: status}) do
+    Logger.debug "handle_rollback() status=#{status}"
     {:ok, conn} = :efirebirdsql_protocol.rollback(conn)
     {:transaction, %__MODULE__{conn: conn, transaction_status: :transaction}}
   end
 
   @impl true
   def handle_fetch(_query, %Result{} = result, _opts, s) do
-    IO.puts "handle_fetch()"
+    Logger.debug "handle_fetch()"
     {:halt, result, s}
   end
 
   @impl true
   def handle_deallocate(query, _cursor, _opts, state) do
-    IO.puts "handle_deallocate()"
+    Logger.debug "handle_deallocate()"
     {:ok, conn} = :efirebirdsql_protocol.free_statement(state.conn, query.stmt, :drop)
     {:ok, %__MODULE__{state | conn: conn}}
   end
