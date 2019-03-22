@@ -107,12 +107,15 @@ defmodule Firebirdex.Protocol do
     case Keyword.get(opts, :mode, :transaction) do
       :transaction when status == :idle ->
         {:ok, conn} = :efirebirdsql_protocol.begin_transaction(false, conn)
+        Logger.debug "handle_begin() 1"
         {:transaction, %__MODULE__{conn: conn, transaction_status: :transaction}}
       :savepoint when status == :transaction ->
         # TODO: savepoint
         {:ok, conn} = :efirebirdsql_protocol.begin_transaction(false, conn)
+        Logger.debug "handle_begin() 2"
         {:transaction, %__MODULE__{conn: conn, transaction_status: :transaction}}
       mode when mode in [:transaction, :savepoint] ->
+        Logger.debug "handle_begin() 3"
         {status, s}
     end
 
