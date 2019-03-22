@@ -38,6 +38,25 @@ defmodule FirebirdexTest do
     {:ok, %Firebirdex.Result{} = result} = Firebirdex.query(conn,
       ["SELECT 'a'", ?,, "'b' FROM RDB$DATABASE"], [])
     assert result.rows == [["a", "b"]]
-  end
 
+    {:ok, _} = Firebirdex.query(conn,
+      "CREATE TABLE foo (
+          a INTEGER NOT NULL,
+          b VARCHAR(30) NOT NULL UNIQUE,
+          c VARCHAR(1024),
+          d DECIMAL(16,3) DEFAULT -0.123,
+          e DATE DEFAULT '1967-08-11',
+          f TIMESTAMP DEFAULT '1967-08-11 23:45:01',
+          g TIME DEFAULT '23:45:01',
+          h BLOB SUB_TYPE 1,
+          i DOUBLE PRECISION DEFAULT 0.0,
+          j FLOAT DEFAULT 0.0,
+          PRIMARY KEY (a),
+          CONSTRAINT CHECK_A CHECK (a <> 0)
+      )", [])
+    {:ok, %Firebirdex.Result{} = result} = Firebirdex.query(conn,
+      "SELECT * from foo", [])
+    assert result.rows == [[]]
+
+  end
 end
