@@ -102,10 +102,20 @@ defmodule Firebirdex.Protocol do
   end
 
   @impl true
-  def handle_begin(_opts, %{conn: conn, transaction_status: status}) do
+  def handle_begin(opts, %{conn: conn, transaction_status: status} = s) do
     Logger.debug "handle_begin() status=#{status}"
-    {:ok, conn} = :efirebirdsql_protocol.begin_transaction(false, conn)
-    {:transaction, %__MODULE__{conn: conn, transaction_status: :transaction}}
+    case Keyword.get(opts, :mode, :transaction) do
+      :transaction when status == :idle ->
+        {:ok, conn} = :efirebirdsql_protocol.begin_transaction(false, conn)
+        {:transaction, %__MODULE__{conn: conn, transaction_status: :transaction}}
+      :savepoint when status == :transaction ->
+        # TODO: savepoint
+        {:ok, conn} = :efirebirdsql_protocol.begin_transaction(false, conn)
+        {:transaction, %__MODULE__{conn: conn, transaction_status: :transaction}}
+      mode when mode in [:transaction, :savepoint] ->
+        {status, s}
+    end
+
   end
 
   @impl true
