@@ -125,14 +125,16 @@ defmodule Firebirdex.Protocol do
   def handle_commit(_opts, %{conn: conn, transaction_status: status}) do
     Logger.debug "handle_commit() status=#{status}"
     {:ok, conn} = :efirebirdsql_protocol.commit(conn)
-    {:transaction, %__MODULE__{conn: conn, transaction_status: :transaction}}
+    {:ok, %Result{}, %__MODULE__{conn: conn, transaction_status: :transaction}}
+    #{:transaction, %__MODULE__{conn: conn, transaction_status: :transaction}}
   end
 
   @impl true
   def handle_rollback(_opts, %{conn: conn, transaction_status: status}) do
     Logger.debug "handle_rollback() status=#{status}"
     {:ok, conn} = :efirebirdsql_protocol.rollback(conn)
-    {:transaction, %__MODULE__{conn: conn, transaction_status: :transaction}}
+    {:ok, %Result{}, %__MODULE__{conn: conn, transaction_status: :transaction}}
+    #{:transaction, %__MODULE__{conn: conn, transaction_status: :transaction}}
   end
 
   @impl true
