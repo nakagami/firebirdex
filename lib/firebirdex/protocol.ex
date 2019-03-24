@@ -7,8 +7,7 @@ defmodule Firebirdex.Protocol do
   alias Firebirdex.{Query, Result}
 
   defstruct [
-    :conn,
-    transaction_status: :idle
+    :conn
   ]
 
   @impl true
@@ -83,16 +82,10 @@ defmodule Firebirdex.Protocol do
   end
 
   @impl true
-  def handle_close(_query, _opts, %{conn: conn, transaction_status: _status}) do
+  def handle_close(_query, _opts, %{conn: conn}) do
     Logger.debug "handle_close()"
     {:ok, conn} = :efirebirdsql_protocol.close(conn)
     {:ok, %__MODULE__{conn: conn}}
-  end
-
-  @impl true
-  def handle_status(_opts, %{conn: _conn, transaction_status: status}) do
-    Logger.debug "handle_status() status=#{status}"
-    {status.transaction_status, status}
   end
 
   @impl true
@@ -102,39 +95,24 @@ defmodule Firebirdex.Protocol do
   end
 
   @impl true
-  def handle_begin(opts, %{conn: conn, transaction_status: status} = s) do
-    Logger.debug "handle_begin() status=#{status}"
+  def handle_begin(opts, %{conn: conn} = s) do
+    Logger.debug "handle_begin()"
     {:ok, conn} = :efirebirdsql_protocol.begin_transaction(false, conn)
-    {:ok, %Result{}, %__MODULE__{conn: conn, transaction_status: :transaction}}
-
-    #case Keyword.get(opts, :mode, :transaction) do
-    #  :transaction when status == :idle ->
-    #    {:ok, conn} = :efirebirdsql_protocol.begin_transaction(false, conn)
-    #    {:ok, %Result{}, %__MODULE__{conn: conn, transaction_status: :transaction}}
-    #  :savepoint when status == :transaction ->
-    #    # TODO: savepoint
-    #    {:ok, conn} = :efirebirdsql_protocol.begin_transaction(false, conn)
-    #    {:ok, %Result{}, %__MODULE__{conn: conn, transaction_status: :transaction}}
-    #  mode when mode in [:transaction, :savepoint] ->
-    #    {status, s}
-    #end
-
+    {:ok, %Result{}, %__MODULE__{conn: conn}}
   end
 
   @impl true
-  def handle_commit(_opts, %{conn: conn, transaction_status: status}) do
-    Logger.debug "handle_commit() status=#{status}"
+  def handle_commit(_opts, %{conn: conn}) do
+    Logger.debug "handle_commit()"
     {:ok, conn} = :efirebirdsql_protocol.commit(conn)
-    {:ok, %Result{}, %__MODULE__{conn: conn, transaction_status: :transaction}}
-    #{:transaction, %__MODULE__{conn: conn, transaction_status: :transaction}}
+    {:ok, %Result{}, %__MODULE__{conn: conn}}
   end
 
   @impl true
   def handle_rollback(_opts, %{conn: conn, transaction_status: status}) do
     Logger.debug "handle_rollback() status=#{status}"
     {:ok, conn} = :efirebirdsql_protocol.rollback(conn)
-    {:ok, %Result{}, %__MODULE__{conn: conn, transaction_status: :transaction}}
-    #{:transaction, %__MODULE__{conn: conn, transaction_status: :transaction}}
+    {:ok, %Result{}, %__MODULE__{conn: conn}}
   end
 
   @impl true
