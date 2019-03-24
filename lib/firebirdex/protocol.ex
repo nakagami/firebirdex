@@ -109,8 +109,8 @@ defmodule Firebirdex.Protocol do
   end
 
   @impl true
-  def handle_rollback(_opts, %{conn: conn, transaction_status: status}) do
-    Logger.debug "handle_rollback() status=#{status}"
+  def handle_rollback(_opts, %{conn: conn}) do
+    Logger.debug "handle_rollback()"
     {:ok, conn} = :efirebirdsql_protocol.rollback(conn)
     {:ok, %Result{}, %__MODULE__{conn: conn}}
   end
