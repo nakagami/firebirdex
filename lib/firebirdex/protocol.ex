@@ -40,13 +40,11 @@ defmodule Firebirdex.Protocol do
 
   @impl true
   def checkout(state) do
-    Logger.debug "checkout()"
     {:ok, state}
   end
 
   @impl true
   def checkin(state) do
-    Logger.debug "checkin()"
     {:ok, state}
   end
 
