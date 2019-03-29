@@ -66,6 +66,14 @@ defmodule Firebirdex.Protocol do
     Decimal.to_string(value, :normal)
   end
 
+  defp convert_param(%Date{} = d) do
+    {d.year, d.month, d.day}
+  end
+
+  defp convert_param(%Time{} = t) do
+    {t.hour, t.minute, t.second, 0}
+  end
+
   defp convert_param(%NaiveDateTime{} = dt) do
     {{dt.year, dt.month, dt.day}, {dt.hour, dt.minute, dt.second, 0}}
   end
