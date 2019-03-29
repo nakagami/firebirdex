@@ -63,11 +63,11 @@ defmodule Firebirdex.Protocol do
   end
 
   defp convert_param(%NaiveDateTime{} = dt) do
-    {{dt.year, dt.month, dt.day}, {dt.hour, dt.second, dt.second, 0}}
+    {{dt.year, dt.month, dt.day}, {dt.hour, dt.minute, dt.second, 0}}
   end
 
   defp convert_param(%DateTime{} = dt) do
-    {{dt.year, dt.month, dt.day}, {dt.hour, dt.second, dt.second, 0}}
+    {{dt.year, dt.month, dt.day}, {dt.hour, dt.minute, dt.second, 0}}
   end
 
   defp convert_param(param) do
