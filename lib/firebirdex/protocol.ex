@@ -82,7 +82,7 @@ defmodule Firebirdex.Protocol do
   def handle_execute(%Query{} = query, params, _opts, state) do
     Logger.debug "handle_execute() #{inspect(params)}"
     params = Enum.map(params, &convert_param(&1))
-    Logger.debug "handle_execute() #{inspet(params)}"
+    Logger.debug "handle_execute() #{inspect(params)}"
     case :efirebirdsql_protocol.execute(state.conn, query.stmt, params) do
       {:ok, conn, stmt} ->
         {:ok, rows, conn, stmt} = :efirebirdsql_protocol.fetchall(conn, stmt)
