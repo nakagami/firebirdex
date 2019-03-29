@@ -12,6 +12,7 @@ defmodule Firebirdex.Protocol do
 
   @impl true
   def connect(opts) do
+    Logger.debug "connect() #{inspect(opts)}"
     hostname = to_charlist(opts[:hostname])
     username = to_charlist(opts[:username])
     password = to_charlist(opts[:password])
@@ -26,6 +27,7 @@ defmodule Firebirdex.Protocol do
 
   @impl true
   def disconnect(_reason, state) do
+    Logger.debug "disconnect()"
     :efirebirdsql_protocol.close(state.conn)
     :ok
   end
@@ -38,11 +40,13 @@ defmodule Firebirdex.Protocol do
 
   @impl true
   def checkout(state) do
+    Logger.debug "checkout()"
     {:ok, state}
   end
 
   @impl true
   def checkin(state) do
+    Logger.debug "checkin()"
     {:ok, state}
   end
 
