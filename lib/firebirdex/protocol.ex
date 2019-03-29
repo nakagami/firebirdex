@@ -97,17 +97,20 @@ defmodule Firebirdex.Protocol do
 
   @impl true
   def handle_close(_query, _opts, %{conn: conn}) do
+    Logger.debug "handle_close()"
     {:ok, conn} = :efirebirdsql_protocol.close(conn)
     {:ok, %__MODULE__{conn: conn}}
   end
 
   @impl true
   def handle_declare(query, _params, _opt, state) do
+    Logger.debug "handle_declare()"
     {:ok, query, query.stmt, state}
   end
 
   @impl true
   def handle_begin(_opts, %{conn: conn}) do
+    Logger.debug "handle_begin()"
     case :efirebirdsql_protocol.begin_transaction(false, conn) do
       {:ok, conn} ->
         {:ok, %Result{}, %__MODULE__{conn: conn}}
@@ -118,6 +121,7 @@ defmodule Firebirdex.Protocol do
 
   @impl true
   def handle_commit(_opts, %{conn: conn}) do
+    Logger.debug "handle_commit()"
     case :efirebirdsql_protocol.commit(conn) do
       {:ok, conn} ->
         {:ok, %Result{}, %__MODULE__{conn: conn}}
@@ -128,6 +132,7 @@ defmodule Firebirdex.Protocol do
 
   @impl true
   def handle_rollback(_opts, %{conn: conn}) do
+    Logger.debug "handle_rollback()"
     case :efirebirdsql_protocol.rollback(conn) do
       {:ok, conn} ->
         {:ok, %Result{}, %__MODULE__{conn: conn}}
@@ -138,17 +143,20 @@ defmodule Firebirdex.Protocol do
 
   @impl true
   def handle_status(_opts, s) do
+    Logger.debug "handle_status()"
     # TODO: transaction status treatment
     {:transaction, s}
   end
 
   @impl true
   def handle_fetch(_query, %Result{} = result, _opts, s) do
+    Logger.debug "handle_fetch()"
     {:halt, result, s}
   end
 
   @impl true
   def handle_deallocate(query, _cursor, _opts, state) do
+    Logger.debug "handle_deallocate()"
     case :efirebirdsql_protocol.free_statement(state.conn, query.stmt, :drop) do
       {:ok, conn, _stmt} ->
         {:ok, %Result{}, %__MODULE__{conn: conn}}
