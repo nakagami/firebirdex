@@ -58,6 +58,18 @@ defmodule Firebirdex.Protocol do
     end
   end
 
+  defp convert_param(%Decimal{} = value) do
+    Decimal.to_string(value, :normal)
+  end
+
+  defp convert_param(%NaiveDateTime{} = dt) do
+    {{dt.year, dt.month, dt.day}, {dt.hour, dt.second, dt.second, 0}}
+  end
+
+  defp convert_param(%DateTime{} = dt) do
+    {{dt.year, dt.month, dt.day}, {dt.hour, dt.second, dt.second, 0}}
+  end
+
   defp convert_param(param) do
     param
   end
@@ -68,7 +80,9 @@ defmodule Firebirdex.Protocol do
 
   @impl true
   def handle_execute(%Query{} = query, params, _opts, state) do
+    Logger.debug "handle_execute() #{params}"
     params = Enum.map(params, &convert_param(&1))
+    Logger.debug "handle_execute() #{params}"
     case :efirebirdsql_protocol.execute(state.conn, query.stmt, params) do
       {:ok, conn, stmt} ->
         {:ok, rows, conn, stmt} = :efirebirdsql_protocol.fetchall(conn, stmt)
