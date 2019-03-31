@@ -22,7 +22,7 @@ defmodule Firebirdex.Protocol do
         Logger.debug "connect() :ok"
         {:ok, %__MODULE__{conn: conn}}
       {:error, number, reason, _conn} ->
-        Logger.debug "connect() :error"
+        Logger.debug "connect() :error #{reason}"
         {:error, %Firebirdex.Error{number: number, reason: reason}}
     end
   end
@@ -103,7 +103,7 @@ defmodule Firebirdex.Protocol do
         Logger.debug "handle_execute() :ok"
         {:ok, %Query{query | stmt: stmt}, %Result{columns: columns, num_rows: num_rows, rows: rows}, %__MODULE__{state | conn: conn}}
       {:error, number, reason, conn} ->
-        Logger.debug "handle_execute() :error: #{reason}"
+        Logger.debug "handle_execute() :error #{reason}"
         {:error, %Firebirdex.Error{number: number, reason: reason, statement: query.statement}, %__MODULE__{state | conn: conn}}
     end
   end
@@ -139,8 +139,8 @@ defmodule Firebirdex.Protocol do
       {:ok, conn} ->
         Logger.debug "handle_commit() :ok"
         {:ok, %Result{}, %__MODULE__{conn: conn}}
-      {:error, _errno, _reason, conn} ->
-        Logger.debug "handle_commit() :error"
+      {:error, _errno, reason, conn} ->
+        Logger.debug "handle_commit() :error #{readon}"
         {:error, %__MODULE__{conn: conn}}
     end
   end
@@ -153,7 +153,7 @@ defmodule Firebirdex.Protocol do
         Logger.debug "handle_rollback() :ok"
         {:ok, %Result{}, %__MODULE__{conn: conn}}
       {:error, _errno, _reason, conn} ->
-        Logger.debug "handle_rollback() :error"
+        Logger.debug "handle_rollback() :error #{reason}"
         {:error, %__MODULE__{conn: conn}}
     end
   end
