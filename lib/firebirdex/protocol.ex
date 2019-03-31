@@ -137,8 +137,10 @@ defmodule Firebirdex.Protocol do
     Logger.debug "handle_commit()"
     case :efirebirdsql_protocol.commit(conn) do
       {:ok, conn} ->
+        Logger.debug "handle_commit() :ok"
         {:ok, %Result{}, %__MODULE__{conn: conn}}
       {:error, _errno, _reason, conn} ->
+        Logger.debug "handle_commit() :error"
         {:error, %__MODULE__{conn: conn}}
     end
   end
@@ -148,8 +150,10 @@ defmodule Firebirdex.Protocol do
     Logger.debug "handle_rollback()"
     case :efirebirdsql_protocol.rollback(conn) do
       {:ok, conn} ->
+        Logger.debug "handle_rollback() :ok"
         {:ok, %Result{}, %__MODULE__{conn: conn}}
       {:error, _errno, _reason, conn} ->
+        Logger.debug "handle_rollback() :error"
         {:error, %__MODULE__{conn: conn}}
     end
   end
