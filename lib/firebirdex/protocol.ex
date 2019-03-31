@@ -19,8 +19,10 @@ defmodule Firebirdex.Protocol do
     database = to_charlist(opts[:database])
     case :efirebirdsql_protocol.connect(hostname, username, password, database, opts) do
       {:ok, conn} ->
+        Logger.debug "connect() :ok"
         {:ok, %__MODULE__{conn: conn}}
       {:error, number, reason, _conn} ->
+        Logger.debug "connect() :error"
         {:error, %Firebirdex.Error{number: number, reason: reason}}
     end
   end
@@ -29,6 +31,7 @@ defmodule Firebirdex.Protocol do
   def disconnect(_reason, state) do
     Logger.debug "disconnect()"
     :efirebirdsql_protocol.close(state.conn)
+    Logger.debug "disconnect() :ok"
     :ok
   end
 
