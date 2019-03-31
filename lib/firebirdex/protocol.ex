@@ -96,8 +96,9 @@ defmodule Firebirdex.Protocol do
       {:ok, conn, stmt} ->
         {:ok, rows, conn, stmt} = :efirebirdsql_protocol.fetchall(conn, stmt)
         columns = Enum.map(:efirebirdsql_protocol.columns(stmt), &(column_name(&1)))
+        {:ok, conn, num_rows} = :efirebirdsql_protocol.rowcount(conn, stmt)
         Logger.debug "handle_execute() :ok"
-        {:ok, %Query{query | stmt: stmt}, %Result{rows: rows, columns: columns}, %__MODULE__{state | conn: conn}}
+        {:ok, %Query{query | stmt: stmt}, %Result{columns: columns, num_rows: num_rows, rows: rows}, %__MODULE__{state | conn: conn}}
       {:error, number, reason, conn} ->
         Logger.debug "handle_execute() :error: #{reason}"
         {:error, %Firebirdex.Error{number: number, reason: reason, statement: query.statement}, %__MODULE__{state | conn: conn}}
