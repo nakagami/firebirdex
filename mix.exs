@@ -1,7 +1,7 @@
 defmodule Firebirdex.Mixfile do
   use Mix.Project
 
-  @version "0.1.0"
+  @version "0.1.1"
 
   def project() do
     [
@@ -43,7 +43,7 @@ defmodule Firebirdex.Mixfile do
     [
       {:db_connection, "~> 2.0"},
       {:decimal, "~> 1.6"},
-      {:efirebirdsql, "~> 0.6.3"},
+      {:efirebirdsql, "~> 0.7.0"},
       {:ex_doc, ">= 0.0.0", only: :dev, runtime: false}
     ]
   end

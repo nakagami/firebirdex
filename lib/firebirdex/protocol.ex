@@ -54,12 +54,12 @@ defmodule Firebirdex.Protocol do
   @impl true
   def handle_prepare(%Query{} = query, _opts, state) do
     Logger.debug "handle_prepare() #{query}"
-    {:ok, conn, stmt} = :efirebirdsql_protocol.allocate_statement(state.conn)
-    case :efirebirdsql_protocol.prepare_statement(to_string(query), conn, stmt) do
-      {:ok, conn, stmt} ->
-        {:ok, %Query{query | stmt: stmt}, %__MODULE__{state | conn: conn}}
-      {:error, number, reason, conn} ->
-        {:error, %Firebirdex.Error{number: number, reason: reason, statement: query.statement}, %__MODULE__{state | conn: conn}}
+    {:ok, stmt} = :efirebirdsql_protocol.allocate_statement(state.conn)
+    case :efirebirdsql_protocol.prepare_statement(to_string(query), state.conn, stmt) do
+      {:ok, stmt} ->
+        {:ok, %Query{query | stmt: stmt}, %__MODULE__{state | conn: state.conn}}
+      {:error, number, reason} ->
+        {:error, %Firebirdex.Error{number: number, reason: reason, statement: query.statement}, %__MODULE__{state | conn: state.conn}}
     end
   end
 
@@ -96,15 +96,15 @@ defmodule Firebirdex.Protocol do
     params = Enum.map(params, &convert_param(&1))
     Logger.debug "handle_execute() #{inspect(params)}"
     case :efirebirdsql_protocol.execute(state.conn, query.stmt, params) do
-      {:ok, conn, stmt} ->
-        {:ok, rows, conn, stmt} = :efirebirdsql_protocol.fetchall(conn, stmt)
+      {:ok, stmt} ->
+        {:ok, rows, stmt} = :efirebirdsql_protocol.fetchall(state.conn, stmt)
         columns = Enum.map(:efirebirdsql_protocol.columns(stmt), &(column_name(&1)))
-        {:ok, conn, num_rows} = :efirebirdsql_protocol.rowcount(conn, stmt)
+        {:ok, num_rows} = :efirebirdsql_protocol.rowcount(state.conn, stmt)
         Logger.debug "handle_execute() :ok"
-        {:ok, %Query{query | stmt: stmt}, %Result{columns: columns, num_rows: num_rows, rows: rows}, %__MODULE__{state | conn: conn}}
-      {:error, number, reason, conn} ->
+        {:ok, %Query{query | stmt: stmt}, %Result{columns: columns, num_rows: num_rows, rows: rows}, %__MODULE__{state | conn: state.conn}}
+      {:error, number, reason} ->
         Logger.debug "handle_execute() :error #{reason}"
-        {:error, %Firebirdex.Error{number: number, reason: reason, statement: query.statement}, %__MODULE__{state | conn: conn}}
+        {:error, %Firebirdex.Error{number: number, reason: reason, statement: query.statement}, %__MODULE__{state | conn: state.conn}}
     end
   end
 
@@ -136,10 +136,10 @@ defmodule Firebirdex.Protocol do
   def handle_commit(_opts, %{conn: conn}) do
     Logger.debug "handle_commit()"
     case :efirebirdsql_protocol.commit(conn) do
-      {:ok, conn} ->
+      :ok ->
         Logger.debug "handle_commit() :ok"
         {:ok, %Result{}, %__MODULE__{conn: conn}}
-      {:error, _errno, reason, conn} ->
+      {:error, _errno, reason} ->
         Logger.debug "handle_commit() :error #{reason}"
         {:error, %__MODULE__{conn: conn}}
     end
@@ -149,10 +149,10 @@ defmodule Firebirdex.Protocol do
   def handle_rollback(_opts, %{conn: conn}) do
     Logger.debug "handle_rollback()"
     case :efirebirdsql_protocol.rollback(conn) do
-      {:ok, conn} ->
+      :ok ->
         Logger.debug "handle_rollback() :ok"
         {:ok, %Result{}, %__MODULE__{conn: conn}}
-      {:error, _errno, reason, conn} ->
+      {:error, _errno, reason} ->
         Logger.debug "handle_rollback() :error #{reason}"
         {:error, %__MODULE__{conn: conn}}
     end
@@ -175,10 +175,10 @@ defmodule Firebirdex.Protocol do
   def handle_deallocate(query, _cursor, _opts, state) do
     Logger.debug "handle_deallocate()"
     case :efirebirdsql_protocol.free_statement(state.conn, query.stmt, :drop) do
-      {:ok, conn, _stmt} ->
-        {:ok, %Result{}, %__MODULE__{conn: conn}}
-      {:error, _errno, _reason, conn} ->
-        {:error, %__MODULE__{conn: conn}}
+      {:ok, _stmt} ->
+        {:ok, %Result{}, %__MODULE__{conn: state.conn}}
+      {:error, _errno, _reason} ->
+        {:error, %__MODULE__{conn: state.conn}}
     end
   end
 
