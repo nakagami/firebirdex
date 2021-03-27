@@ -37,5 +37,5 @@ jobs:
       run: mix deps.get
     - name: Run tests
       run: |
-      source test_user.env
-      mix test
+        source test_user.env
+        mix test
