@@ -41,9 +41,10 @@ defmodule Firebirdex.Mixfile do
 
   defp deps() do
     [
-      {:db_connection, "~> 2.0"},
-      {:decimal, "~> 1.6"},
-      {:efirebirdsql, "~> 0.7.0"},
+      {:db_connection, "~> 2.4"},
+      {:decimal, "~> 2.0"},
+      {:timex, "~> 3.7"},
+      {:efirebirdsql, "~> 0.8.0"},
       {:ex_doc, ">= 0.0.0", only: :dev, runtime: false}
     ]
   end
