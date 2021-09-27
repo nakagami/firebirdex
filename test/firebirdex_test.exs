@@ -3,7 +3,7 @@ defmodule FirebirdexTest do
 
   @opts TestHelpers.opts()
 
-  describe "basic_test" do
+  describe "connect_test" do
     opts = @opts
     {:ok, conn} = Firebirdex.start_link(opts)
 
@@ -58,5 +58,20 @@ defmodule FirebirdexTest do
       "SELECT * from foo", [])
     assert result.rows == []
 
+    # timezone test
+    {:ok, _} = Firebirdex.query(conn,
+      "CREATE TABLE tz_test (
+          id INTEGER NOT NULL,
+          t TIME WITH TIME ZONE DEFAULT '12:34:56',
+          ts TIMESTAMP WITH TIME ZONE DEFAULT '1967-08-11 23:45:01',
+          PRIMARY KEY (id)
+      )", [])
+    {:ok, _} = Firebirdex.query(conn, "insert into tz_test (id) values (1)", [])
+    {:ok, %Firebirdex.Result{} = result} = Firebirdex.query(conn, "SELECT * from tz_test", [])
+
+    assert result.columns == ["ID", "T", "TS"]
+    assert result.rows == [[1, ~T[03:34:56.000000], DateTime.from_naive!(~N[1967-08-11 23:45:01.000000], "Asia/Tokyo")]]
+
   end
+
 end

@@ -10,7 +10,8 @@ defmodule TestHelpers do
       password: System.get_env("ISC_PASSWORD", "masterkey"),
       database: database,
       createdb: true,
-      show_sensitive_data_on_connection_error: true
+      show_sensitive_data_on_connection_error: true,
+      timezone: 'Asia/Tokyo'
     ]
   end
 end

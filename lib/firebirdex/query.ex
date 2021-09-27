@@ -55,13 +55,16 @@ defmodule Firebirdex.Query do
       {:ok, v} = NaiveDateTime.new(year, month, day, hour, minute, second, microsecond)
       v
     end
-    defp convert_value({_, :time_tz, _, _, _}, {_name, {{hour, minute, second, microsecond}, _tz}}) do
+    defp convert_value({_, :time_tz, _, _, _}, {_name, {{hour, minute, second, microsecond}, _tz, _offset}}) do
       # TODO: timezone support
       {:ok, v} = Time.new(hour, minute, second, microsecond)
       v
     end
-    defp convert_value({_, :timestamp_tz, _, _, _}, {_name, {{year, month, day}, {hour, minute, second, microsecond}, tz}}) do
-      DateTime.from_naive(NaiveDateTime.new(year, month, day, hour, minute, second, microsecond), tz)
+    defp convert_value({_, :timestamp_tz, _, _, _}, {_name, {{year, month, day}, {hour, minute, second, microsecond}, tz, offset}}) do
+      {:ok, dt} = NaiveDateTime.new(year, month, day, hour, minute, second, microsecond)
+      dttz = DateTime.from_naive!(dt, tz)
+      {:ok, v} = DateTime.shift_zone(dttz, offset)
+      v
     end
     defp convert_value({_, _, _, _, _}, {_name, v}) do
       v
