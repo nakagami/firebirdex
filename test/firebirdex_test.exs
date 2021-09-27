@@ -70,7 +70,7 @@ defmodule FirebirdexTest do
     {:ok, %Firebirdex.Result{} = result} = Firebirdex.query(conn, "SELECT * from tz_test", [])
 
     assert result.columns == ["ID", "T", "TS"]
-    assert result.rows == [[1, ~T[03:34:56.000000], DateTime.from_naive!(~N[1967-08-11 23:45:01.000000], "Asia/Tokyo")]]
+    assert result.rows == [[1, {~T[12:34:56.000000], "Asia/Tokyo"}, DateTime.from_naive!(~N[1967-08-11 23:45:01.000000], "Asia/Tokyo")]]
 
   end
 
