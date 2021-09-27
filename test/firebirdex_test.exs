@@ -58,26 +58,29 @@ defmodule FirebirdexTest do
       "SELECT * from foo", [])
     assert result.rows == []
 
-    # timezone test
-    {:ok, _} = Firebirdex.query(conn,
-      "CREATE TABLE tz_test (
-          id INTEGER NOT NULL,
-          t TIME WITH TIME ZONE DEFAULT '12:34:56',
-          ts TIMESTAMP WITH TIME ZONE DEFAULT '1967-08-11 23:45:01',
-          PRIMARY KEY (id)
-      )", [])
-    {:ok, _} = Firebirdex.query(conn, "insert into tz_test (id) values (1)", [])
-    {:ok, _} = Firebirdex.query(conn, "insert into tz_test (id, t, ts) values (2, '12:34:56 Asia/Seoul', '1967-08-11 23:45:01.0000 Asia/Seoul')", [])
-    {:ok, _} = Firebirdex.query(conn, "insert into tz_test (id, t, ts) values (3, '03:34:56 UTC', '1967-08-11 14:45:01.0000 UTC')", [])
+    firebird_major_version = TestHelpers.get_firebird_major_version(conn)
+    if firebird_major_version > 3 do
+      # timezone test
+      {:ok, _} = Firebirdex.query(conn,
+        "CREATE TABLE tz_test (
+            id INTEGER NOT NULL,
+            t TIME WITH TIME ZONE DEFAULT '12:34:56',
+            ts TIMESTAMP WITH TIME ZONE DEFAULT '1967-08-11 23:45:01',
+            PRIMARY KEY (id)
+        )", [])
+      {:ok, _} = Firebirdex.query(conn, "insert into tz_test (id) values (1)", [])
+      {:ok, _} = Firebirdex.query(conn, "insert into tz_test (id, t, ts) values (2, '12:34:56 Asia/Seoul', '1967-08-11 23:45:01.0000 Asia/Seoul')", [])
+      {:ok, _} = Firebirdex.query(conn, "insert into tz_test (id, t, ts) values (3, '03:34:56 UTC', '1967-08-11 14:45:01.0000 UTC')", [])
 
-    {:ok, %Firebirdex.Result{} = result} = Firebirdex.query(conn, "SELECT * from tz_test", [])
+      {:ok, %Firebirdex.Result{} = result} = Firebirdex.query(conn, "SELECT * from tz_test", [])
 
-    assert result.columns == ["ID", "T", "TS"]
-    assert result.rows == [
-      [1, {~T[12:34:56.000000], "Asia/Tokyo"}, DateTime.from_naive!(~N[1967-08-11 23:45:01.000000], "Asia/Tokyo")],
-      [2, {~T[12:34:56.000000], "Asia/Seoul"}, DateTime.from_naive!(~N[1967-08-11 23:45:01.000000], "Asia/Seoul")],
-      [3, {~T[03:34:56.000000], "UTC"}, DateTime.from_naive!(~N[1967-08-11 14:45:01.000000], "UTC")]
-    ]
+      assert result.columns == ["ID", "T", "TS"]
+      assert result.rows == [
+        [1, {~T[12:34:56.000000], "Asia/Tokyo"}, DateTime.from_naive!(~N[1967-08-11 23:45:01.000000], "Asia/Tokyo")],
+        [2, {~T[12:34:56.000000], "Asia/Seoul"}, DateTime.from_naive!(~N[1967-08-11 23:45:01.000000], "Asia/Seoul")],
+        [3, {~T[03:34:56.000000], "UTC"}, DateTime.from_naive!(~N[1967-08-11 14:45:01.000000], "UTC")]
+      ]
+    end
 
   end
 
