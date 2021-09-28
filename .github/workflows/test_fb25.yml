@@ -13,18 +13,21 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: juarezr/firebirdsql-github-action@v1.0.0
+    - name: Checkout sources
+      uses: actions/checkout@v2
+
+    - name: Setup FirebirdSQL container
+      uses: juarezr/firebirdsql-github-action@v1.0.0
       with:
         version: 'latest'
         isc_password: "masterkey"
 
-    steps:
-    - uses: actions/checkout@v2
     - name: Set up Elixir
       uses: actions/setup-elixir@v1
       with:
         elixir-version: '1.10.3' # Define the elixir version [required]
         otp-version: '22.3' # Define the OTP version [required]
+
     - name: Restore dependencies cache
       uses: actions/cache@v2
       with:
