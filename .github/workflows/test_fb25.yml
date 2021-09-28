@@ -18,7 +18,7 @@ jobs:
     - name: Setup FirebirdSQL container
       uses: juarezr/firebirdsql-github-action@v1.0.0
       with:
-        version: 'latest'
+        version: '2.5-ss'
         isc_password: "masterkey"
     - name: Set up Elixir
       uses: actions/setup-elixir@v1
