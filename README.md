@@ -2,6 +2,10 @@
 
 Elixir database driver for Firebird https://firebirdsql.org/
 
+## Requirements
+
+Firebird 2.5 or higher
+
 ## Preparation
 
 Add `:firebirdex` to your dependencies:
