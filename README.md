@@ -16,7 +16,7 @@ end
 
 ## Example
 
-```
+```elixir
 opts = [
   hostname: "servername",
   username: "sysdba",
