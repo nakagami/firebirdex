@@ -29,5 +29,5 @@ opts = [
 {:ok, %Firebirdex.Result{} = result} = Firebirdex.query(pid, Firebirdex.query("SELECT * FROM rdb$relations where rdb$system_flag = ?", [1]))
 
 IO.inspect result.columns
-IO.inspect result.rows[0]
+IO.inspect Enum.at result.rows, 0
 ```
