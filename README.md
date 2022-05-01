@@ -12,6 +12,7 @@ def deps() do
     {:firebirdex, "~> 0.2"}
   ]
 end
+```
 
 ## Example
 
