@@ -3,7 +3,7 @@ defmodule FirebirdexTest do
 
   @opts TestHelpers.opts()
 
-  describe "connect_test" do
+  test "connect_test" do
     opts = @opts
     {:ok, conn} = Firebirdex.start_link(opts)
 
@@ -56,6 +56,8 @@ defmodule FirebirdexTest do
       )", [])
     {:ok, %Firebirdex.Result{} = result} = Firebirdex.query(conn,
       "SELECT * from foo", [])
+    assert result.rows == []
+    result = Firebirdex.query!(conn, "SELECT * from foo", [])
     assert result.rows == []
 
     firebird_major_version = TestHelpers.get_firebird_major_version(conn)
