@@ -2,13 +2,14 @@ defmodule Firebirdex.Connection do
   @moduledoc false
   use DBConnection
 
-  alias Firebirdex.{Query, Result}
+  alias Firebirdex.{Query, Result, Error}
 
   defstruct [
     :conn
   ]
 
   @impl true
+  @spec connect(list()) :: {:ok, Firebirdex.Connection.t()} | {:error, Error.t()}
   def connect(opts) do
     hostname = to_charlist(opts[:hostname])
     username = to_charlist(opts[:username])
@@ -19,19 +20,22 @@ defmodule Firebirdex.Connection do
       {:ok, conn} ->
         {:ok, %__MODULE__{conn: conn}}
       {:error, number, reason, _conn} ->
-        {:error, %Firebirdex.Error{number: number, reason: reason}}
+        {:error, %Error{number: number, reason: reason}}
     end
   end
 
   @impl true
-  def disconnect(_reason, state) do
-    :efirebirdsql_protocol.close(state.conn)
-    :ok
+  def disconnect(_reason,  %__MODULE__{conn: conn}) do
+    case :efirebirdsql_protocol.close(conn) do
+      {:ok, _conn} ->
+        :ok
+      {:error, number, reason, _conn} ->
+        {:error, %Error{number: number, reason: reason}}
+    end
   end
 
   @impl true
   def ping(state) do
-    # TODO
     {:ok, state}
   end
 
@@ -52,7 +56,7 @@ defmodule Firebirdex.Connection do
       {:ok, stmt} ->
         {:ok, %Query{query | stmt: stmt}, %__MODULE__{state | conn: state.conn}}
       {:error, number, reason} ->
-        {:error, %Firebirdex.Error{number: number, reason: reason, statement: query.statement}, %__MODULE__{state | conn: state.conn}}
+        {:error, %Error{number: number, reason: reason, statement: query.statement}, %__MODULE__{state | conn: state.conn}}
     end
   end
 
@@ -94,14 +98,15 @@ defmodule Firebirdex.Connection do
         {:ok, num_rows} = :efirebirdsql_protocol.rowcount(state.conn, stmt)
         {:ok, %Query{query | stmt: stmt}, %Result{columns: columns, num_rows: num_rows, rows: rows}, %__MODULE__{state | conn: state.conn}}
       {:error, number, reason} ->
-        {:error, %Firebirdex.Error{number: number, reason: reason, statement: query.statement}, %__MODULE__{state | conn: state.conn}}
+        {:error, %Error{number: number, reason: reason, statement: query.statement}, %__MODULE__{state | conn: state.conn}}
     end
   end
 
   @impl true
-  def handle_close(_query, _opts, %{conn: conn}) do
-    {:ok, conn} = :efirebirdsql_protocol.close(conn)
-    {:ok, %__MODULE__{conn: conn}}
+  def handle_close(_query, _opts, state) do
+    with {:ok, conn} <- :efirebirdsql_protocol.close(state.conn) do
+      {:ok, nil, %__MODULE__{state | conn: conn}}
+    end
   end
 
   @impl true
