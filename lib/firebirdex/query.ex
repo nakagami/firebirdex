@@ -2,14 +2,12 @@ defmodule Firebirdex.Query do
   alias Firebirdex.Result
 
   @type t :: %__MODULE__{
-          ref:  reference() | nil,
           name: iodata(),
           statement: iodata(),
           stmt: tuple()
         }
 
   defstruct name: "",
-            ref: nil,
             stmt: nil,
             statement: nil,
             stmt: nil

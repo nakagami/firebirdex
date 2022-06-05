@@ -1,30 +1,33 @@
 defmodule Firebirdex do
+  @moduledoc """
+  Firebird driver for Elixir.
+  """
+
   alias Firebirdex.Connection
   alias Firebirdex.Error
   alias Firebirdex.Query
   alias Firebirdex.Result
 
-  @type conn :: DBConnection.conn()
-
-  @spec start_link(keyword()) :: {:ok, pid()} | {:error, Error.t()}
+  @spec start_link([Connection.connection_opt()]) :: {:ok, pid()} | {:error, Error.t()}
   def start_link(opts) do
     DBConnection.start_link(Connection, opts)
   end
 
-  @spec query(conn, iodata, list, keyword()) ::
-          {:ok, Result.t()} | {:error, Error.t()}
+  @spec query(DBConnection.conn(), iodata(), list(), list()) ::
+          {:ok, Result.t()} | {:error, Exception.t()}
   def query(conn, statement, params \\ [], opts \\ []) do
-    query = %Query{name: "", statement: statement}
-    case DBConnection.prepare_execute(conn, query, params, opts) do
-      {:ok, _, result} ->
-        {:ok, result}
-      {:error, _} = error ->
-        error
-    end
+    query = %Query{name: "", statement: IO.iodata_to_binary(statement)}
 
+    case DBConnection.prepare_execute(conn, query, params, opts) do
+      {:ok, _query, result} ->
+        {:ok, result}
+
+      otherwise ->
+        otherwise
+    end
   end
 
-  @spec query!(conn, iodata, list, keyword()) :: Result.t()
+  @spec query!(DBConnection.conn(), iodata(), list(), list()) :: Result.t()
   def query!(conn, statement, params \\ [], opts \\ []) do
     case query(conn, statement, params, opts) do
       {:ok, result} -> result
@@ -32,64 +35,69 @@ defmodule Firebirdex do
     end
   end
 
-  @spec prepare(conn(), iodata(), iodata(), keyword()) ::
-          {:ok, Query.t()} | {:error, Error.t()}
+  @spec prepare(DBConnection.conn(), iodata(), iodata(), list()) ::
+          {:ok, Query.t()} | {:error, Exception.t()}
   def prepare(conn, name, statement, opts \\ []) do
-    query = %Query{name: name, statement: statement, ref: make_ref()}
+    query = %Query{name: name, statement: statement}
     DBConnection.prepare(conn, query, opts)
   end
 
-  @spec prepare!(conn(), iodata(), iodata(), keyword()) :: Query.t()
+  @spec prepare!(DBConnection.conn(), iodata(), iodata(), list()) :: Query.t()
   def prepare!(conn, name, statement, opts \\ []) do
-    query = %Query{name: name, statement: statement, ref: make_ref()}
+    query = %Query{name: name, statement: statement}
     DBConnection.prepare!(conn, query, opts)
   end
 
-  @spec prepare_execute(conn, iodata, iodata, list, keyword()) ::
+  @spec prepare_execute(DBConnection.conn(), iodata(), iodata(), list(), list()) ::
           {:ok, Query.t(), Result.t()} | {:error, Error.t()}
-  def prepare_execute(conn, name, statement, params \\ [], opts \\ [])
-      when is_binary(statement) or is_list(statement) do
-    query = %Query{name: name, statement: statement, ref: make_ref()}
+  def prepare_execute(conn, name, statement, params \\ [], opts \\ []) do
+    query = %Query{name: name, statement: statement}
     DBConnection.prepare_execute(conn, query, params, opts)
   end
 
-  @spec prepare_execute!(conn, iodata, iodata, list, keyword()) ::
+  @spec prepare_execute!(DBConnection.conn(), iodata(), iodata(), list(), list()) ::
           {Query.t(), Result.t()}
-  def prepare_execute!(conn, name, statement, params \\ [], opts \\ [])
-      when is_binary(statement) or is_list(statement) do
-    query = %Query{name: name, statement: statement, ref: make_ref()}
+  def prepare_execute!(conn, name, statement, params \\ [], opts \\ []) do
+    query = %Query{name: name, statement: statement}
     DBConnection.prepare_execute!(conn, query, params, opts)
   end
 
-  @spec execute(conn(), Query.t(), list(), keyword()) ::
-          {:ok, Query.t(), Result.t()} | {:error, Error.t()}
-  defdelegate execute(conn, query, params \\ [], opts \\ []), to: DBConnection
+  @spec execute(DBConnection.conn(), Query.t(), list(), list()) ::
+          {:ok, Result.t()} | {:error, Error.t()}
+  def execute(conn, query, params, opts \\ []) do
+    DBConnection.execute(conn, query, params, opts)
+  end
 
-  @spec execute!(conn(), Query.t(), list(), keyword()) :: Result.t()
-  defdelegate execute!(conn, query, params \\ [], opts \\ []), to: DBConnection
+  @spec execute!(DBConnection.conn(), Query.t(), list(), list()) :: Result.t()
+  def execute!(conn, query, params, opts \\ []) do
+    DBConnection.execute!(conn, query, params, opts)
+  end
 
-  @spec close(conn(), Query.t(), keyword()) :: :ok
-  def close(conn, %Query{} = query, opts \\ []) do
-    case DBConnection.close(conn, query, opts) do
-      {:ok, _} ->
-        :ok
-
-      {:error, _} = error ->
-        error
+  @spec close(DBConnection.conn(), Query.t(), list()) :: :ok | {:error, Exception.t()}
+  def close(conn, query, opts \\ []) do
+    with {:ok, _} <- DBConnection.close(conn, query, opts) do
+      :ok
     end
   end
 
-  @spec transaction(conn, (DBConnection.t() -> result), keyword()) ::
+  @spec close!(DBConnection.conn(), Query.t(), list()) :: :ok
+  def close!(conn, query, opts \\ []) do
+    DBConnection.close!(conn, query, opts)
+    :ok
+  end
+
+  @spec transaction(DBConnection.conn, (DBConnection.t() -> result), list()) ::
           {:ok, result} | {:error, any}
         when result: var
-  defdelegate transaction(conn, fun, opts \\ []), to: DBConnection
+  def transaction(conn, fun, opts \\ []) do
+    DBConnection.transaction(conn, fun, opts)
+  end
 
   @spec rollback(DBConnection.t(), any()) :: no_return()
-  defdelegate rollback(conn, reason), to: DBConnection
+  def rollback(conn, reason), do: DBConnection.rollback(conn, reason)
 
-  @spec child_spec(keyword()) :: Supervisor.child_spec()
+  @spec child_spec([Connection.connection_opt()]) :: :supervisor.child_spec()
   def child_spec(opts) do
     DBConnection.child_spec(Connection, opts)
   end
-
 end
