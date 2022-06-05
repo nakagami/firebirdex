@@ -8,7 +8,7 @@ defmodule Firebirdex.Query do
         }
 
   defstruct name: "",
-            stmt: nil,
+            name: nil,
             statement: nil,
             stmt: nil
 
