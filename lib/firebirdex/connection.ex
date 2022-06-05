@@ -9,7 +9,6 @@ defmodule Firebirdex.Connection do
   ]
 
   @impl true
-  @spec connect(list()) :: {:ok, Firebirdex.Connection.t()} | {:error, Error.t()}
   def connect(opts) do
     hostname = to_charlist(opts[:hostname])
     username = to_charlist(opts[:username])
