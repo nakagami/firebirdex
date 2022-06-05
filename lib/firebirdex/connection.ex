@@ -12,7 +12,8 @@ defmodule Firebirdex.Connection do
   def connect(opts) do
     hostname = to_charlist(opts[:hostname])
     username = to_charlist(opts[:username])
-    password = to_charlist(opts[:password])
+    password = Keyword.get(opts, :password, System.get_env("FIREBIRD_PASSWORD"))
+    password = to_charlist(password)
     database = to_charlist(opts[:database])
     case :efirebirdsql_protocol.connect(hostname, username, password, database, opts) do
       {:ok, conn} ->
