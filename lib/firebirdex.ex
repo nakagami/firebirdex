@@ -1,15 +1,18 @@
 defmodule Firebirdex do
+  alias Firebirdex.Connection
+  alias Firebirdex.Error
   alias Firebirdex.Query
+  alias Firebirdex.Result
 
   @type conn :: DBConnection.conn()
 
-  @spec start_link(keyword()) :: {:ok, pid()} | {:error, Firebirdex.Error.t()}
+  @spec start_link(keyword()) :: {:ok, pid()} | {:error, Error.t()}
   def start_link(opts) do
-    DBConnection.start_link(Firebirdex.Protocol, opts)
+    DBConnection.start_link(Connection, opts)
   end
 
   @spec query(conn, iodata, list, keyword()) ::
-          {:ok, Firebirdex.Result.t()} | {:error, Firebirdex.Error.t()}
+          {:ok, Result.t()} | {:error, Error.t()}
   def query(conn, statement, params \\ [], opts \\ []) do
     query = %Query{name: "", statement: statement}
     case DBConnection.prepare_execute(conn, query, params, opts) do
@@ -21,7 +24,7 @@ defmodule Firebirdex do
 
   end
 
-  @spec query!(conn, iodata, list, keyword()) :: Firebirdex.Result.t()
+  @spec query!(conn, iodata, list, keyword()) :: Result.t()
   def query!(conn, statement, params \\ [], opts \\ []) do
     case query(conn, statement, params, opts) do
       {:ok, result} -> result
@@ -30,43 +33,43 @@ defmodule Firebirdex do
   end
 
   @spec prepare(conn(), iodata(), iodata(), keyword()) ::
-          {:ok, Firebirdex.Query.t()} | {:error, Firebirdex.Error.t()}
+          {:ok, Query.t()} | {:error, Error.t()}
   def prepare(conn, name, statement, opts \\ []) do
-    query = %Firebirdex.Query{name: name, statement: statement, ref: make_ref()}
+    query = %Query{name: name, statement: statement, ref: make_ref()}
     DBConnection.prepare(conn, query, opts)
   end
 
-  @spec prepare!(conn(), iodata(), iodata(), keyword()) :: Firebirdex.Query.t()
+  @spec prepare!(conn(), iodata(), iodata(), keyword()) :: Query.t()
   def prepare!(conn, name, statement, opts \\ []) do
-    query = %Firebirdex.Query{name: name, statement: statement, ref: make_ref()}
+    query = %Query{name: name, statement: statement, ref: make_ref()}
     DBConnection.prepare!(conn, query, opts)
   end
 
   @spec prepare_execute(conn, iodata, iodata, list, keyword()) ::
-          {:ok, Firebirdex.Query.t(), Firebirdex.Result.t()} | {:error, Firebirdex.Error.t()}
+          {:ok, Query.t(), Result.t()} | {:error, Error.t()}
   def prepare_execute(conn, name, statement, params \\ [], opts \\ [])
       when is_binary(statement) or is_list(statement) do
-    query = %Firebirdex.Query{name: name, statement: statement, ref: make_ref()}
+    query = %Query{name: name, statement: statement, ref: make_ref()}
     DBConnection.prepare_execute(conn, query, params, opts)
   end
 
   @spec prepare_execute!(conn, iodata, iodata, list, keyword()) ::
-          {Firebirdex.Query.t(), Firebirdex.Result.t()}
+          {Query.t(), Result.t()}
   def prepare_execute!(conn, name, statement, params \\ [], opts \\ [])
       when is_binary(statement) or is_list(statement) do
-    query = %Firebirdex.Query{name: name, statement: statement, ref: make_ref()}
+    query = %Query{name: name, statement: statement, ref: make_ref()}
     DBConnection.prepare_execute!(conn, query, params, opts)
   end
 
-  @spec execute(conn(), Firebirdex.Query.t(), list(), keyword()) ::
-          {:ok, Firebirdex.Query.t(), Firebirdex.Result.t()} | {:error, Firebirdex.Error.t()}
+  @spec execute(conn(), Query.t(), list(), keyword()) ::
+          {:ok, Query.t(), Result.t()} | {:error, Error.t()}
   defdelegate execute(conn, query, params \\ [], opts \\ []), to: DBConnection
 
-  @spec execute!(conn(), Firebirdex.Query.t(), list(), keyword()) :: Firebirdex.Result.t()
+  @spec execute!(conn(), Query.t(), list(), keyword()) :: Result.t()
   defdelegate execute!(conn, query, params \\ [], opts \\ []), to: DBConnection
 
-  @spec close(conn(), Firebirdex.Query.t(), keyword()) :: :ok
-  def close(conn, %Firebirdex.Query{} = query, opts \\ []) do
+  @spec close(conn(), Query.t(), keyword()) :: :ok
+  def close(conn, %Query{} = query, opts \\ []) do
     case DBConnection.close(conn, query, opts) do
       {:ok, _} ->
         :ok
@@ -86,7 +89,7 @@ defmodule Firebirdex do
 
   @spec child_spec(keyword()) :: Supervisor.child_spec()
   def child_spec(opts) do
-    DBConnection.child_spec(Firebirdex.Protocol, opts)
+    DBConnection.child_spec(Connection, opts)
   end
 
 end

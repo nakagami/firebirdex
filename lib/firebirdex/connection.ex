@@ -1,4 +1,4 @@
-defmodule Firebirdex.Protocol do
+defmodule Firebirdex.Connection do
   @moduledoc false
   use DBConnection
 
