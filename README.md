@@ -26,7 +26,6 @@ opts = [
   username: "sysdba",
   password: "password",
   database: "/some/where/sample.fdb",
-  show_sensitive_data_on_connection_error: true,
 ]
 
 {:ok, pid} = Firebirdex.start_link(opts)
@@ -39,3 +38,4 @@ IO.inspect Enum.at result.rows, 0
 # Same as above (may raise an exception)
 result = Firebirdex.query!(pid, Firebirdex.query("SELECT * FROM rdb$relations where rdb$system_flag = ?", [1]))
 ```
+
