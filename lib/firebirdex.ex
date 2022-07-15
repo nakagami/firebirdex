@@ -10,7 +10,9 @@ defmodule Firebirdex do
 
   @spec start_link([Connection.connection_opt()]) :: {:ok, pid()} | {:error, Error.t()}
   def start_link(opts) do
-    DBConnection.start_link(Connection, opts)
+    connection_opts = opts
+      |> Keyword.put_new(:password, System.get_env("FIREBIRD_PASSWORD"))
+    DBConnection.start_link(Connection, connection_opts)
   end
 
   @spec query(DBConnection.conn(), iodata(), list(), list()) ::
