@@ -1,7 +1,7 @@
 defmodule Firebirdex.Mixfile do
   use Mix.Project
 
-  @version "0.2.0"
+  @version "0.3.0"
 
   def project() do
     [
@@ -26,7 +26,7 @@ defmodule Firebirdex.Mixfile do
   defp package do
     [
       maintainers: ["Hajime Nakagami"],
-      licenses: ["Apache 2.0"],
+      licenses: ["MIT"],
       links: %{"Github" => "https://github.com/nakagami/firebirdex"}
     ]
   end
