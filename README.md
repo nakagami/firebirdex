@@ -20,6 +20,8 @@ end
 
 ## Example
 
+If the password is set in the FIREBIRD_PASSWORD environment variable, you can omit the password in the opts variable below.
+
 ```elixir
 opts = [
   hostname: "servername",
