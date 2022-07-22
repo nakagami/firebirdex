@@ -7,8 +7,7 @@ defmodule Firebirdex.Query do
           stmt: tuple()
         }
 
-  defstruct name: "",
-            name: nil,
+  defstruct name: nil,
             statement: nil,
             stmt: nil
 

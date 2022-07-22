@@ -44,11 +44,6 @@ defmodule Firebirdex.Connection do
   end
 
   @impl true
-  def checkin(state) do
-    {:ok, state}
-  end
-
-  @impl true
   def handle_prepare(%Query{} = query, _opts, state) do
     {:ok, stmt} = :efirebirdsql_protocol.allocate_statement(state.conn)
     case :efirebirdsql_protocol.prepare_statement(to_string(query), state.conn, stmt) do
