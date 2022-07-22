@@ -23,7 +23,7 @@ jobs:
         sudo chmod 0664 /etc/firebird/3.0/SYSDBA.password
         grep '=' /etc/firebird/3.0/SYSDBA.password |sed 's/^/export /' >test_user.env
     - name: Set up Elixir
-      uses: erlef/setup-beam
+      uses: erlef/setup-beam@v1
       with:
         elixir-version: '1.12.2' # Define the elixir version [required]
         otp-version: '24.2' # Define the OTP version [required]
