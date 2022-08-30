@@ -34,8 +34,19 @@ defmodule Firebirdex.Connection do
   end
 
   @impl true
-  def ping(state) do
-    {:ok, state}
+  def ping( %__MODULE__{conn: conn} = state) do
+    sql = "SELECT rdb$get_context('SYSTEM', 'ENGINE_VERSION') from rdb$database"
+    with {:ok,statement} <- :efirebirdsql_protocol.allocate_statement(conn),
+      {:ok,statement} <- :efirebirdsql_protocol.prepare_statement(sql, conn, statement),
+      {:ok,_} <- :efirebirdsql_protocol.execute(conn, statement),
+      {:ok,_} <- :efirebirdsql_protocol.free_statement(conn,statement,:close)
+    do
+      {:ok,state}
+      # Uncomment following line for testing purposes. It will disonnect/reconnect randomly
+      # if :rand.uniform(5) == 2, do: {:disconnect,__MODULE__,state}, else: {:ok,state}
+    else
+      _ -> {:disconnect,__MODULE__,state}
+    end
   end
 
   @impl true
