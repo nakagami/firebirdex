@@ -28,6 +28,7 @@ defmodule Firebirdex.Query do
       params
     end
 
+    defp convert_value({_, _ , _, _, _}, {_name, nil}), do: nil
     defp convert_value({_, :long, scale, _, _}, {_name, v}) when scale < 0 do
       Decimal.new(to_string(v))
     end
