@@ -60,6 +60,14 @@ defmodule FirebirdexTest do
     result = Firebirdex.query!(conn, "SELECT * from foo", [])
     assert result.rows == []
 
+    {:ok, _} = Firebirdex.query(conn,
+      "INSERT INTO foo (a, b, c, d) VALUES (1, 'A', NULL, NULL)", [])
+    {:ok, %Firebirdex.Result{} = result} = Firebirdex.query(conn,
+      "SELECT c, d FROM foo", [])
+      assert result.rows == [
+        [nil, nil]
+      ]
+
     firebird_major_version = TestHelpers.get_firebird_major_version(conn)
     if firebird_major_version > 3 do
       # timezone test
