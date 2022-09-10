@@ -21,7 +21,8 @@ defmodule Firebirdex do
     query = %Query{name: "", statement: IO.iodata_to_binary(statement)}
 
     case DBConnection.prepare_execute(conn, query, params, opts) do
-      {:ok, _query, result} ->
+      {:ok, query, result} ->
+        DBConnection.close(conn,query)
         {:ok, result}
 
       otherwise ->

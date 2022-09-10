@@ -108,9 +108,11 @@ defmodule Firebirdex.Connection do
   end
 
   @impl true
-  def handle_close(_query, _opts, state) do
-    with {:ok, conn} <- :efirebirdsql_protocol.close(state.conn) do
-      {:ok, nil, %__MODULE__{state | conn: conn}}
+  def handle_close(query, _opts, state) do
+    with {:ok, _conn} <- :efirebirdsql_protocol.free_statement(state.conn, query.stmt, :drop) do
+      {:ok, nil, state}
+    else
+      otherwise -> {:error,otherwise,state}
     end
   end
 
