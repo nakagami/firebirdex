@@ -39,7 +39,7 @@ defmodule Firebirdex.Connection do
     with {:ok,statement} <- :efirebirdsql_protocol.allocate_statement(conn),
       {:ok,statement} <- :efirebirdsql_protocol.prepare_statement(sql, conn, statement),
       {:ok,_} <- :efirebirdsql_protocol.execute(conn, statement),
-      {:ok,_} <- :efirebirdsql_protocol.free_statement(conn,statement,:close)
+      {:ok,_} <- :efirebirdsql_protocol.free_statement(conn,statement,:drop)
     do
       {:ok,state}
       # Uncomment following line for testing purposes. It will disonnect/reconnect randomly
