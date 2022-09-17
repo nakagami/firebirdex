@@ -67,6 +67,10 @@ defmodule Firebirdex.Query do
       {:ok, v} = DateTime.shift_zone(dttz, offset)
       v
     end
+    defp convert_value({_, _, _, _, _}, {_name, v}) when is_binary(v) do
+      # TODO: convert result value encoding
+      v
+    end
     defp convert_value({_, _, _, _, _}, {_name, v}) do
       v
     end

@@ -56,6 +56,8 @@ defmodule Firebirdex.Connection do
 
   @impl true
   def handle_prepare(%Query{} = query, _opts, state) do
+    # TODO: convert query encoding
+
     {:ok, stmt} = :efirebirdsql_protocol.allocate_statement(state.conn)
     case :efirebirdsql_protocol.prepare_statement(to_string(query), state.conn, stmt) do
       {:ok, stmt} ->
@@ -83,6 +85,11 @@ defmodule Firebirdex.Connection do
 
   defp convert_param(%DateTime{} = dt) do
     {{dt.year, dt.month, dt.day}, {dt.hour, dt.minute, dt.second, 0}}
+  end
+
+  defp convert_param(param) when is_binary(param) do
+    # TODO: convert param encoding
+    param
   end
 
   defp convert_param(param) do
