@@ -94,4 +94,12 @@ defmodule FirebirdexTest do
 
   end
 
+  test "encoding_test" do
+    assert Firebirdex.Encoding.from_string!("", :utf_8) == ""
+  end
+
+  test "decoding_test" do
+    assert Firebirdex.Encoding.to_string!("", :utf_8) == ""
+  end
+
 end
