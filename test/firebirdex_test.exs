@@ -112,7 +112,7 @@ defmodule FirebirdexTest do
     assert Firebirdex.Encoding.from_string!("", :iso8859_5) == ""
     assert Firebirdex.Encoding.from_string!("", :iso8859_6) == ""
     assert Firebirdex.Encoding.from_string!("", :iso8859_7) == ""
-    assert Firebridex.Encoding.from_string!("", :iso8859_8) == ""
+    assert Firebirdex.Encoding.from_string!("", :iso8859_8) == ""
     assert Firebirdex.Encoding.from_string!("", :iso8859_9) == ""
     assert Firebirdex.Encoding.from_string!("", :iso8859_13) == ""
     assert Firebirdex.Encoding.from_string!("", :cp852) == ""
