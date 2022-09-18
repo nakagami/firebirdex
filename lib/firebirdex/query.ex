@@ -4,12 +4,14 @@ defmodule Firebirdex.Query do
   @type t :: %__MODULE__{
           name: iodata(),
           statement: iodata(),
-          stmt: tuple()
+          stmt: tuple(),
+          charset: atom()
         }
 
   defstruct name: nil,
             statement: nil,
-            stmt: nil
+            stmt: nil,
+            charset: nil
 
   defimpl DBConnection.Query do
     def parse(query, _opts) do

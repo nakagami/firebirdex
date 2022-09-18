@@ -61,7 +61,7 @@ defmodule Firebirdex.Connection do
     {:ok, stmt} = :efirebirdsql_protocol.allocate_statement(state.conn)
     case :efirebirdsql_protocol.prepare_statement(Encoding.from_string!(to_string(query), state.charset), state.conn, stmt) do
       {:ok, stmt} ->
-        {:ok, %Query{query | stmt: stmt}, %__MODULE__{state | conn: state.conn}}
+        {:ok, %Query{query | stmt: stmt, charset: state.charset}, %__MODULE__{state | conn: state.conn}}
       {:error, number, reason} ->
         {:error, %Error{number: number, reason: reason, statement: query.statement}, %__MODULE__{state | conn: state.conn}}
     end
