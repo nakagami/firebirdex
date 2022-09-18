@@ -92,6 +92,7 @@ defmodule FirebirdexTest do
       ]
     end
 
+    GenServer.stop(conn)
   end
 
   test "encoding_test" do
@@ -198,5 +199,6 @@ defmodule FirebirdexTest do
       "SELECT * FROM foo WHERE s=?", ["テスト2"])
     assert result.rows == [["テスト2"]]
 
+    GenServer.stop(conn)
   end
 end
