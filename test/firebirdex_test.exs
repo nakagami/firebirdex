@@ -178,4 +178,25 @@ defmodule FirebirdexTest do
     assert Firebirdex.Encoding.to_string!("", :cp1258) == ""
   end
 
+  test "charset_test" do
+    opts = @opts ++ [charset: :cp932]
+    {:ok, conn} = Firebirdex.start_link(opts)
+
+    {:ok, _} = Firebirdex.query(conn,
+      "CREATE TABLE foo (s VARCHAR(30))", [])
+    {:ok, _} = Firebirdex.query(conn, "insert into foo (s) values ('テスト1')", [])
+    {:ok, _} = Firebirdex.query(conn, "insert into foo (s) values (?)", ["テスト2"])
+
+    {:ok, %Firebirdex.Result{} = result} = Firebirdex.query(conn,
+      "SELECT * FROM foo", [])
+    assert result.rows == [["テスト1"], ["テスト2"]]
+
+    {:ok, %Firebirdex.Result{} = result} = Firebirdex.query(conn,
+      "SELECT * FROM foo WHERE s='テスト1'", [])
+    assert result.rows == [["テスト1"]]
+    {:ok, %Firebirdex.Result{} = result} = Firebirdex.query(conn,
+      "SELECT * FROM foo WHERE s=?", ["テスト2"])
+    assert result.rows == [["テスト2"]]
+
+  end
 end
