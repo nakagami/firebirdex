@@ -2,10 +2,11 @@ defmodule Firebirdex.Connection do
   @moduledoc false
   use DBConnection
 
-  alias Firebirdex.{Query, Result, Error}
+  alias Firebirdex.{Query, Result, Error, Encoding}
 
   defstruct [
-    :conn
+    :conn,
+    :charset
   ]
 
   @impl true
@@ -15,9 +16,10 @@ defmodule Firebirdex.Connection do
     password = Keyword.get(opts, :password, System.get_env("FIREBIRD_PASSWORD"))
     password = to_charlist(password)
     database = to_charlist(opts[:database])
+    charset = Keyword.get(opts, :charset, :utf_8)
     case :efirebirdsql_protocol.connect(hostname, username, password, database, opts) do
       {:ok, conn} ->
-        {:ok, %__MODULE__{conn: conn}}
+        {:ok, %__MODULE__{conn: conn, charset: charset}}
       {:error, number, reason, _conn} ->
         {:error, %Error{number: number, reason: reason}}
     end
