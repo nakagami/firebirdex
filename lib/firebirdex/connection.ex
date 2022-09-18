@@ -67,32 +67,31 @@ defmodule Firebirdex.Connection do
     end
   end
 
-  defp convert_param(%Decimal{} = value) do
+  defp convert_param(%Decimal{} = value, _charset) do
     Decimal.to_string(value, :normal)
   end
 
-  defp convert_param(%Date{} = d) do
+  defp convert_param(%Date{} = d, _charset) do
     {d.year, d.month, d.day}
   end
 
-  defp convert_param(%Time{} = t) do
+  defp convert_param(%Time{} = t, _charset) do
     {t.hour, t.minute, t.second, 0}
   end
 
-  defp convert_param(%NaiveDateTime{} = dt) do
+  defp convert_param(%NaiveDateTime{} = dt, _charset) do
     {{dt.year, dt.month, dt.day}, {dt.hour, dt.minute, dt.second, 0}}
   end
 
-  defp convert_param(%DateTime{} = dt) do
+  defp convert_param(%DateTime{} = dt, _charset) do
     {{dt.year, dt.month, dt.day}, {dt.hour, dt.minute, dt.second, 0}}
   end
 
-  defp convert_param(param) when is_binary(param) do
-    # TODO: convert param encoding
-    param
+  defp convert_param(param, charset) when is_binary(param) do
+    Encoding.from_string!(param, charset)
   end
 
-  defp convert_param(param) do
+  defp convert_param(param, _charset) do
     param
   end
 
@@ -102,7 +101,7 @@ defmodule Firebirdex.Connection do
 
   @impl true
   def handle_execute(%Query{} = query, params, _opts, state) do
-    params = Enum.map(params, &convert_param(&1))
+    params = Enum.map(params, &convert_param(&1, state.charset))
     case :efirebirdsql_protocol.execute(state.conn, query.stmt, params) do
       {:ok, stmt} ->
         {:ok, rows, stmt} = :efirebirdsql_protocol.fetchall(state.conn, stmt)
