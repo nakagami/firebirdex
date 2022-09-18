@@ -1,6 +1,7 @@
 use Mix.Config
 config :codepagex, :encodings, [
   :"VENDORS/MICSFT/WINDOWS/CP932",
+  :"VENDORS/MICSFT/PC/CP737",
   :"VENDORS/MICSFT/PC/CP437",
   :"VENDORS/MICSFT/PC/CP850",
   :"VENDORS/MICSFT/PC/CP865",

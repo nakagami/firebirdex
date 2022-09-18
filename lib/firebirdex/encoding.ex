@@ -1,6 +1,8 @@
 defmodule Firebirdex.Encoding do
   def from_string!(s, :utf_8), do: s
   def from_string!(s, :cp932), do: Codepagex.from_string!(s, "VENDORS/MICSFT/WINDOWS/CP932")
+  # there is no mapping for euc_jp
+  def from_string!(s, :cp737), do: Codepagex.from_string!(s, "VENDORS/MICSFT/PC/CP737")
   def from_string!(s, :cp437), do: Codepagex.from_string!(s, "VENDORS/MICSFT/PC/CP437")
   def from_string!(s, :cp850), do: Codepagex.from_string!(s, "VENDORS/MICSFT/PC/CP850")
   def from_string!(s, :cp865), do: Codepagex.from_string!(s, "VENDORS/MICSFT/PC/CP865")
@@ -19,6 +21,7 @@ defmodule Firebirdex.Encoding do
   def from_string!(s, :iso8859_8), do: Codepagex.from_string!(s, "ISO8859/8859-8")
   def from_string!(s, :iso8859_9), do: Codepagex.from_string!(s, "ISO8859/8859-9")
   def from_string!(s, :iso8859_13), do: Codepagex.from_string!(s, "ISO8859/8859-13")
+  # there is no mapping for euc_kr
   def from_string!(s, :cp852), do: Codepagex.from_string!(s, "VENDORS/MICSFT/PC/CP852")
   def from_string!(s, :cp857), do: Codepagex.from_string!(s, "VENDORS/MICSFT/PC/CP857")
   def from_string!(s, :cp861), do: Codepagex.from_string!(s, "VENDORS/MICSFT/PC/CP861")
@@ -40,6 +43,8 @@ defmodule Firebirdex.Encoding do
 
   def to_string!(b, :utf_8), do: b
   def to_string!(b, :cp932), do: Codepagex.to_string!(b, "VENDORS/MICSFT/WINDOWS/CP932")
+  # there is no mapping for euc_jp
+  def to_string!(b, :cp737), do: Codepagex.to_string!(b, "VENDORS/MICSFT/PC/CP737")
   def to_string!(b, :cp437), do: Codepagex.to_string!(b, "VENDORS/MICSFT/PC/CP437")
   def to_string!(b, :cp850), do: Codepagex.to_string!(b, "VENDORS/MICSFT/PC/CP850")
   def to_string!(b, :cp865), do: Codepagex.to_string!(b, "VENDORS/MICSFT/PC/CP865")
@@ -58,6 +63,7 @@ defmodule Firebirdex.Encoding do
   def to_string!(b, :iso8859_8), do: Codepagex.to_string!(b, "ISO8859/8859-8")
   def to_string!(b, :iso8859_9), do: Codepagex.to_string!(b, "ISO8859/8859-9")
   def to_string!(b, :iso8859_13), do: Codepagex.to_string!(b, "ISO8859/8859-13")
+  # there is not mapping for euc_kr
   def to_string!(b, :cp852), do: Codepagex.to_string!(b, "VENDORS/MICSFT/PC/CP852")
   def to_string!(b, :cp857), do: Codepagex.to_string!(b, "VENDORS/MICSFT/PC/CP857")
   def to_string!(b, :cp861), do: Codepagex.to_string!(b, "VENDORS/MICSFT/PC/CP861")

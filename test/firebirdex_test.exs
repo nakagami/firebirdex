@@ -97,6 +97,7 @@ defmodule FirebirdexTest do
   test "encoding_test" do
     assert Firebirdex.Encoding.from_string!("", :utf_8) == ""
     assert Firebirdex.Encoding.from_string!("", :cp932) == ""
+    assert Firebirdex.Encoding.from_string!("", :cp737) == ""
     assert Firebirdex.Encoding.from_string!("", :cp437) == ""
     assert Firebirdex.Encoding.from_string!("", :cp850) == ""
     assert Firebirdex.Encoding.from_string!("", :cp865) == ""
@@ -138,6 +139,7 @@ defmodule FirebirdexTest do
   test "decoding_test" do
     assert Firebirdex.Encoding.to_string!("", :utf_8) == ""
     assert Firebirdex.Encoding.to_string!("", :cp932) == ""
+    assert Firebirdex.Encoding.to_string!("", :cp737) == ""
     assert Firebirdex.Encoding.to_string!("", :cp437) == ""
     assert Firebirdex.Encoding.to_string!("", :cp850) == ""
     assert Firebirdex.Encoding.to_string!("", :cp865) == ""
