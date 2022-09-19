@@ -92,6 +92,113 @@ defmodule FirebirdexTest do
       ]
     end
 
+    GenServer.stop(conn)
   end
 
+  test "encoding_test" do
+    assert Firebirdex.Encoding.from_string!("", :utf_8) == ""
+    assert Firebirdex.Encoding.from_string!("", :cp932) == ""
+    assert Firebirdex.Encoding.from_string!("", :cp737) == ""
+    assert Firebirdex.Encoding.from_string!("", :cp437) == ""
+    assert Firebirdex.Encoding.from_string!("", :cp850) == ""
+    assert Firebirdex.Encoding.from_string!("", :cp865) == ""
+    assert Firebirdex.Encoding.from_string!("", :cp860) == ""
+    assert Firebirdex.Encoding.from_string!("", :cp863) == ""
+    assert Firebirdex.Encoding.from_string!("", :cp775) == ""
+    assert Firebirdex.Encoding.from_string!("", :cp862) == ""
+    assert Firebirdex.Encoding.from_string!("", :cp864) == ""
+    assert Firebirdex.Encoding.from_string!("", :iso8859_1) == ""
+    assert Firebirdex.Encoding.from_string!("", :iso8859_2) == ""
+    assert Firebirdex.Encoding.from_string!("", :iso8859_3) == ""
+    assert Firebirdex.Encoding.from_string!("", :iso8859_4) == ""
+    assert Firebirdex.Encoding.from_string!("", :iso8859_5) == ""
+    assert Firebirdex.Encoding.from_string!("", :iso8859_6) == ""
+    assert Firebirdex.Encoding.from_string!("", :iso8859_7) == ""
+    assert Firebirdex.Encoding.from_string!("", :iso8859_8) == ""
+    assert Firebirdex.Encoding.from_string!("", :iso8859_9) == ""
+    assert Firebirdex.Encoding.from_string!("", :iso8859_13) == ""
+    assert Firebirdex.Encoding.from_string!("", :cp852) == ""
+    assert Firebirdex.Encoding.from_string!("", :cp857) == ""
+    assert Firebirdex.Encoding.from_string!("", :cp861) == ""
+    assert Firebirdex.Encoding.from_string!("", :cp866) == ""
+    assert Firebirdex.Encoding.from_string!("", :cp869) == ""
+    assert Firebirdex.Encoding.from_string!("", :cp1250) == ""
+    assert Firebirdex.Encoding.from_string!("", :cp1251) == ""
+    assert Firebirdex.Encoding.from_string!("", :cp1252) == ""
+    assert Firebirdex.Encoding.from_string!("", :cp1253) == ""
+    assert Firebirdex.Encoding.from_string!("", :cp1254) == ""
+    assert Firebirdex.Encoding.from_string!("", :cp950) == ""
+    assert Firebirdex.Encoding.from_string!("", :cp936) == ""
+    assert Firebirdex.Encoding.from_string!("", :cp1255) == ""
+    assert Firebirdex.Encoding.from_string!("", :cp1256) == ""
+    assert Firebirdex.Encoding.from_string!("", :cp1257) == ""
+    assert Firebirdex.Encoding.from_string!("", :koi8_r) == ""
+    assert Firebirdex.Encoding.from_string!("", :koi8_u) == ""
+    assert Firebirdex.Encoding.from_string!("", :cp1258) == ""
+  end
+
+  test "decoding_test" do
+    assert Firebirdex.Encoding.to_string!("", :utf_8) == ""
+    assert Firebirdex.Encoding.to_string!("", :cp932) == ""
+    assert Firebirdex.Encoding.to_string!("", :cp737) == ""
+    assert Firebirdex.Encoding.to_string!("", :cp437) == ""
+    assert Firebirdex.Encoding.to_string!("", :cp850) == ""
+    assert Firebirdex.Encoding.to_string!("", :cp865) == ""
+    assert Firebirdex.Encoding.to_string!("", :cp860) == ""
+    assert Firebirdex.Encoding.to_string!("", :cp863) == ""
+    assert Firebirdex.Encoding.to_string!("", :cp775) == ""
+    assert Firebirdex.Encoding.to_string!("", :cp862) == ""
+    assert Firebirdex.Encoding.to_string!("", :cp864) == ""
+    assert Firebirdex.Encoding.to_string!("", :iso8859_1) == ""
+    assert Firebirdex.Encoding.to_string!("", :iso8859_2) == ""
+    assert Firebirdex.Encoding.to_string!("", :iso8859_3) == ""
+    assert Firebirdex.Encoding.to_string!("", :iso8859_4) == ""
+    assert Firebirdex.Encoding.to_string!("", :iso8859_5) == ""
+    assert Firebirdex.Encoding.to_string!("", :iso8859_6) == ""
+    assert Firebirdex.Encoding.to_string!("", :iso8859_7) == ""
+    assert Firebirdex.Encoding.to_string!("", :iso8859_8) == ""
+    assert Firebirdex.Encoding.to_string!("", :iso8859_9) == ""
+    assert Firebirdex.Encoding.to_string!("", :iso8859_13) == ""
+    assert Firebirdex.Encoding.to_string!("", :cp852) == ""
+    assert Firebirdex.Encoding.to_string!("", :cp857) == ""
+    assert Firebirdex.Encoding.to_string!("", :cp861) == ""
+    assert Firebirdex.Encoding.to_string!("", :cp866) == ""
+    assert Firebirdex.Encoding.to_string!("", :cp869) == ""
+    assert Firebirdex.Encoding.to_string!("", :cp1250) == ""
+    assert Firebirdex.Encoding.to_string!("", :cp1251) == ""
+    assert Firebirdex.Encoding.to_string!("", :cp1252) == ""
+    assert Firebirdex.Encoding.to_string!("", :cp1253) == ""
+    assert Firebirdex.Encoding.to_string!("", :cp1254) == ""
+    assert Firebirdex.Encoding.to_string!("", :cp950) == ""
+    assert Firebirdex.Encoding.to_string!("", :cp936) == ""
+    assert Firebirdex.Encoding.to_string!("", :cp1255) == ""
+    assert Firebirdex.Encoding.to_string!("", :cp1256) == ""
+    assert Firebirdex.Encoding.to_string!("", :cp1257) == ""
+    assert Firebirdex.Encoding.to_string!("", :koi8_r) == ""
+    assert Firebirdex.Encoding.to_string!("", :koi8_u) == ""
+    assert Firebirdex.Encoding.to_string!("", :cp1258) == ""
+  end
+
+  test "charset_test" do
+    opts = @opts ++ [charset: :cp932]
+    {:ok, conn} = Firebirdex.start_link(opts)
+
+    {:ok, _} = Firebirdex.query(conn,
+      "CREATE TABLE foo (s VARCHAR(30))", [])
+    {:ok, _} = Firebirdex.query(conn, "insert into foo (s) values ('テスト1')", [])
+    {:ok, _} = Firebirdex.query(conn, "insert into foo (s) values (?)", ["テスト2"])
+
+    {:ok, %Firebirdex.Result{} = result} = Firebirdex.query(conn,
+      "SELECT * FROM foo", [])
+    assert result.rows == [["テスト1"], ["テスト2"]]
+
+    {:ok, %Firebirdex.Result{} = result} = Firebirdex.query(conn,
+      "SELECT * FROM foo WHERE s='テスト1'", [])
+    assert result.rows == [["テスト1"]]
+    {:ok, %Firebirdex.Result{} = result} = Firebirdex.query(conn,
+      "SELECT * FROM foo WHERE s=?", ["テスト2"])
+    assert result.rows == [["テスト2"]]
+
+    GenServer.stop(conn)
+  end
 end

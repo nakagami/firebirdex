@@ -2,10 +2,11 @@ defmodule Firebirdex.Connection do
   @moduledoc false
   use DBConnection
 
-  alias Firebirdex.{Query, Result, Error}
+  alias Firebirdex.{Query, Result, Error, Encoding}
 
   defstruct [
-    :conn
+    :conn,
+    :charset
   ]
 
   @impl true
@@ -15,9 +16,10 @@ defmodule Firebirdex.Connection do
     password = Keyword.get(opts, :password, System.get_env("FIREBIRD_PASSWORD"))
     password = to_charlist(password)
     database = to_charlist(opts[:database])
+    charset = Keyword.get(opts, :charset, :utf_8)
     case :efirebirdsql_protocol.connect(hostname, username, password, database, opts) do
       {:ok, conn} ->
-        {:ok, %__MODULE__{conn: conn}}
+        {:ok, %__MODULE__{conn: conn, charset: charset}}
       {:error, number, reason, _conn} ->
         {:error, %Error{number: number, reason: reason}}
     end
@@ -57,35 +59,39 @@ defmodule Firebirdex.Connection do
   @impl true
   def handle_prepare(%Query{} = query, _opts, state) do
     {:ok, stmt} = :efirebirdsql_protocol.allocate_statement(state.conn)
-    case :efirebirdsql_protocol.prepare_statement(to_string(query), state.conn, stmt) do
+    case :efirebirdsql_protocol.prepare_statement(Encoding.from_string!(to_string(query), state.charset), state.conn, stmt) do
       {:ok, stmt} ->
-        {:ok, %Query{query | stmt: stmt}, %__MODULE__{state | conn: state.conn}}
+        {:ok, %Query{query | stmt: stmt, charset: state.charset}, %__MODULE__{state | conn: state.conn}}
       {:error, number, reason} ->
         {:error, %Error{number: number, reason: reason, statement: query.statement}, %__MODULE__{state | conn: state.conn}}
     end
   end
 
-  defp convert_param(%Decimal{} = value) do
+  defp convert_param(%Decimal{} = value, _charset) do
     Decimal.to_string(value, :normal)
   end
 
-  defp convert_param(%Date{} = d) do
+  defp convert_param(%Date{} = d, _charset) do
     {d.year, d.month, d.day}
   end
 
-  defp convert_param(%Time{} = t) do
+  defp convert_param(%Time{} = t, _charset) do
     {t.hour, t.minute, t.second, 0}
   end
 
-  defp convert_param(%NaiveDateTime{} = dt) do
+  defp convert_param(%NaiveDateTime{} = dt, _charset) do
     {{dt.year, dt.month, dt.day}, {dt.hour, dt.minute, dt.second, 0}}
   end
 
-  defp convert_param(%DateTime{} = dt) do
+  defp convert_param(%DateTime{} = dt, _charset) do
     {{dt.year, dt.month, dt.day}, {dt.hour, dt.minute, dt.second, 0}}
   end
 
-  defp convert_param(param) do
+  defp convert_param(param, charset) when is_binary(param) do
+    Encoding.from_string!(param, charset)
+  end
+
+  defp convert_param(param, _charset) do
     param
   end
 
@@ -95,7 +101,7 @@ defmodule Firebirdex.Connection do
 
   @impl true
   def handle_execute(%Query{} = query, params, _opts, state) do
-    params = Enum.map(params, &convert_param(&1))
+    params = Enum.map(params, &convert_param(&1, state.charset))
     case :efirebirdsql_protocol.execute(state.conn, query.stmt, params) do
       {:ok, stmt} ->
         {:ok, rows, stmt} = :efirebirdsql_protocol.fetchall(state.conn, stmt)
