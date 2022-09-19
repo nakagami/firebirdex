@@ -68,6 +68,22 @@ defmodule FirebirdexTest do
         [nil, nil]
       ]
 
+    {:ok, _} = Firebirdex.query(conn,
+      "CREATE TABLE charset_test (s VARCHAR(30))", [])
+    {:ok, _} = Firebirdex.query(conn, "insert into charset_test (s) values ('テスト1')", [])
+    {:ok, _} = Firebirdex.query(conn, "insert into charset_test (s) values (?)", ["テスト2"])
+
+    {:ok, %Firebirdex.Result{} = result} = Firebirdex.query(conn,
+      "SELECT * FROM charset_test", [])
+    assert result.rows == [["テスト1"], ["テスト2"]]
+
+    {:ok, %Firebirdex.Result{} = result} = Firebirdex.query(conn,
+      "SELECT * FROM charset_test WHERE s='テスト1'", [])
+    assert result.rows == [["テスト1"]]
+    {:ok, %Firebirdex.Result{} = result} = Firebirdex.query(conn,
+      "SELECT * FROM charset_test WHERE s=?", ["テスト2"])
+    assert result.rows == [["テスト2"]]
+
     firebird_major_version = TestHelpers.get_firebird_major_version(conn)
     if firebird_major_version > 3 do
       # timezone test
@@ -177,28 +193,5 @@ defmodule FirebirdexTest do
     assert Firebirdex.Encoding.to_string!("", :koi8_r) == ""
     assert Firebirdex.Encoding.to_string!("", :koi8_u) == ""
     assert Firebirdex.Encoding.to_string!("", :cp1258) == ""
-  end
-
-  test "charset_test" do
-    opts = @opts ++ [charset: :cp932]
-    {:ok, conn} = Firebirdex.start_link(opts)
-
-    {:ok, _} = Firebirdex.query(conn,
-      "CREATE TABLE foo (s VARCHAR(30))", [])
-    {:ok, _} = Firebirdex.query(conn, "insert into foo (s) values ('テスト1')", [])
-    {:ok, _} = Firebirdex.query(conn, "insert into foo (s) values (?)", ["テスト2"])
-
-    {:ok, %Firebirdex.Result{} = result} = Firebirdex.query(conn,
-      "SELECT * FROM foo", [])
-    assert result.rows == [["テスト1"], ["テスト2"]]
-
-    {:ok, %Firebirdex.Result{} = result} = Firebirdex.query(conn,
-      "SELECT * FROM foo WHERE s='テスト1'", [])
-    assert result.rows == [["テスト1"]]
-    {:ok, %Firebirdex.Result{} = result} = Firebirdex.query(conn,
-      "SELECT * FROM foo WHERE s=?", ["テスト2"])
-    assert result.rows == [["テスト2"]]
-
-    GenServer.stop(conn)
   end
 end
