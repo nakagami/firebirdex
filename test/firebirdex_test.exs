@@ -84,6 +84,10 @@ defmodule FirebirdexTest do
       "SELECT * FROM charset_test WHERE s=?", ["テスト2"])
     assert result.rows == [["テスト2"]]
 
+    Firebirdex.transaction(conn, fn conn ->
+      Firebirdex.query(conn, "DELETE FROM charset_test")
+    end)
+
     firebird_major_version = TestHelpers.get_firebird_major_version(conn)
     if firebird_major_version > 3 do
       # timezone test
