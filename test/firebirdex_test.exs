@@ -84,10 +84,6 @@ defmodule FirebirdexTest do
       "SELECT * FROM charset_test WHERE s=?", ["テスト2"])
     assert result.rows == [["テスト2"]]
 
-    Firebirdex.transaction(conn, fn conn ->
-      Firebirdex.query(conn, "DELETE FROM charset_test")
-    end)
-
     firebird_major_version = TestHelpers.get_firebird_major_version(conn)
     if firebird_major_version > 3 do
       # timezone test
@@ -111,6 +107,10 @@ defmodule FirebirdexTest do
         [3, {~T[03:34:56.000000], "UTC"}, DateTime.from_naive!(~N[1967-08-11 14:45:01.000000], "UTC")]
       ]
     end
+
+    Firebirdex.transaction(conn, fn conn ->
+      Firebirdex.query(conn, "DELETE FROM foo")
+    end)
 
     GenServer.stop(conn)
   end
