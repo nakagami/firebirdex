@@ -3,10 +3,11 @@ defmodule Firebirdex.Connection do
   use DBConnection
 
   alias Firebirdex.{Query, Result, Error, Encoding}
+  require Record
+  Record.defrecord :econn, Record.extract(:conn, from_lib: "efirebirdsql/include/efirebirdsql.hrl")
 
   defstruct [
     :conn,
-    :charset
   ]
 
   @impl true
@@ -16,10 +17,9 @@ defmodule Firebirdex.Connection do
     password = Keyword.get(opts, :password, System.get_env("FIREBIRD_PASSWORD"))
     password = to_charlist(password)
     database = to_charlist(opts[:database])
-    charset = Keyword.get(opts, :charset, :utf_8)
     case :efirebirdsql_protocol.connect(hostname, username, password, database, opts) do
       {:ok, conn} ->
-        {:ok, %__MODULE__{conn: conn, charset: charset}}
+        {:ok, %__MODULE__{conn: conn}}
       {:error, number, reason, _conn} ->
         {:error, %Error{number: number, reason: reason}}
     end
@@ -58,10 +58,12 @@ defmodule Firebirdex.Connection do
 
   @impl true
   def handle_prepare(%Query{} = query, _opts, state) do
+    charset = econn(state.conn, :charset)
+
     {:ok, stmt} = :efirebirdsql_protocol.allocate_statement(state.conn)
-    case :efirebirdsql_protocol.prepare_statement(Encoding.from_string!(to_string(query), state.charset), state.conn, stmt) do
+    case :efirebirdsql_protocol.prepare_statement(Encoding.from_string!(to_string(query), charset), state.conn, stmt) do
       {:ok, stmt} ->
-        {:ok, %Query{query | stmt: stmt, charset: state.charset}, %__MODULE__{state | conn: state.conn}}
+        {:ok, %Query{query | stmt: stmt, charset: charset}, %__MODULE__{state | conn: state.conn}}
       {:error, number, reason} ->
         {:error, %Error{number: number, reason: reason, statement: query.statement}, %__MODULE__{state | conn: state.conn}}
     end
@@ -101,7 +103,7 @@ defmodule Firebirdex.Connection do
 
   @impl true
   def handle_execute(%Query{} = query, params, _opts, state) do
-    params = Enum.map(params, &convert_param(&1, state.charset))
+    params = Enum.map(params, &convert_param(&1, econn(state.conn, :charset)))
     case :efirebirdsql_protocol.execute(state.conn, query.stmt, params) do
       {:ok, stmt} ->
         {:ok, rows, stmt} = :efirebirdsql_protocol.fetchall(state.conn, stmt)

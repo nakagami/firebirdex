@@ -108,6 +108,10 @@ defmodule FirebirdexTest do
       ]
     end
 
+    Firebirdex.transaction(conn, fn conn ->
+      Firebirdex.query(conn, "DELETE FROM foo")
+    end)
+
     GenServer.stop(conn)
   end
 
