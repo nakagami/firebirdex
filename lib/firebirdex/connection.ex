@@ -207,7 +207,6 @@ defmodule Firebirdex.Connection do
 
   @impl true
   def handle_status(_opts, s) do
-    # TODO: transaction status treatment
     {s.transaction_status, s}
   end
 
