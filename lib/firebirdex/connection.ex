@@ -156,23 +156,53 @@ defmodule Firebirdex.Connection do
   end
 
   @impl true
-  def handle_commit(_opts, %{conn: conn, transaction_status: _status} = s) do
-    case :efirebirdsql_protocol.commit(conn) do
-      :ok ->
-        {:ok, %Result{}, %__MODULE__{conn: conn, transaction_status: :idle}}
-      {:error, _errno, _reason} ->
-        {:error, s}
+  def handle_commit(opts, %{conn: conn, transaction_status: status} = s) do
+    case Keyword.get(opts, :mode, :transaction) do
+      :transaction when status == :transaction ->
+        case :efirebirdsql_protocol.commit(conn) do
+          :ok ->
+            {:ok, %Result{}, %__MODULE__{conn: conn, transaction_status: :idle}}
+          {:error, _errno, _reason} ->
+            {:error, s}
+        end
+
+      :savepoint when status == :transaction ->
+        case :efirebirdsql_protocol.exec_immediate("RELEASE SAVEPOINT firebirdex_savepoint", conn) do
+          :ok ->
+            {status, s}
+          {:error, _errno, _reason, _conn} ->
+            {:error, s}
+        end
+
+      mode when mode in [:transaction, :savepoint] ->
+        {status, s}
     end
+
   end
 
   @impl true
-  def handle_rollback(_opts, %{conn: conn, transaction_status: _status} = s) do
-    case :efirebirdsql_protocol.rollback(conn) do
-      :ok ->
-        {:ok, %Result{}, %__MODULE__{conn: conn, transaction_status: :idle}}
-      {:error, _errno, _reason} ->
-        {:error, s}
+  def handle_rollback(opts, %{conn: conn, transaction_status: status} = s) do
+    case Keyword.get(opts, :mode, :transaction) do
+      :transaction when status == :transaction ->
+        case :efirebirdsql_protocol.rollback(conn) do
+          :ok ->
+            {:ok, %Result{}, %__MODULE__{conn: conn, transaction_status: :idle}}
+          {:error, _errno, _reason} ->
+            {:error, s}
+        end
+
+      :savepoint when status == :transaction ->
+        case :efirebirdsql_protocol.exec_immediate("ROLLBACK TO SAVEPOINT firebirdex_savepoint", conn) do
+          :ok ->
+            {status, s}
+          {:error, _errno, _reason, _conn} ->
+            {:error, s}
+        end
+
+      mode when mode in [:transaction, :savepoint] ->
+        {status, s}
     end
+
   end
 
   @impl true
