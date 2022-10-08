@@ -8,6 +8,7 @@ defmodule Firebirdex.Connection do
 
   defstruct [
     :conn,
+    :transaction_status,
   ]
 
   @impl true
@@ -19,7 +20,7 @@ defmodule Firebirdex.Connection do
     database = to_charlist(opts[:database])
     case :efirebirdsql_protocol.connect(hostname, username, password, database, opts) do
       {:ok, conn} ->
-        {:ok, %__MODULE__{conn: conn}}
+        {:ok, %__MODULE__{conn: conn, transaction_status: :transaction}}
       {:error, number, reason, _conn} ->
         {:error, %Error{number: number, reason: reason}}
     end
@@ -130,39 +131,83 @@ defmodule Firebirdex.Connection do
   end
 
   @impl true
-  def handle_begin(_opts, %{conn: conn}) do
-    case :efirebirdsql_protocol.begin_transaction(false, conn) do
-      {:ok, conn} ->
-        {:ok, %Result{}, %__MODULE__{conn: conn}}
-      {:error, _errno, _reason, conn} ->
-        {:error, %__MODULE__{conn: conn}}
+  def handle_begin(opts, %{conn: conn, transaction_status: status} = s) do
+    case Keyword.get(opts, :mode, :transaction) do
+      :transaction when status == :idle ->
+        case :efirebirdsql_protocol.begin_transaction(false, conn) do
+          {:ok, conn} ->
+            {:ok, %Result{}, %__MODULE__{conn: conn, transaction_status: :transaction}}
+          {:error, _errno, _reason, conn} ->
+            {:error, %__MODULE__{conn: conn, transaction_status: status}}
+        end
+
+      :savepoint when status == :transaction ->
+        case :efirebirdsql_protocol.exec_immediate("SAVEPOINT firebirdex_savepoint", conn) do
+          :ok ->
+            {status, s}
+          {:error, _errno, _reason, _conn} ->
+            {:error, s}
+        end
+
+      mode when mode in [:transaction, :savepoint] ->
+        {status, s}
     end
+
   end
 
   @impl true
-  def handle_commit(_opts, %{conn: conn}) do
-    case :efirebirdsql_protocol.commit(conn) do
-      :ok ->
-        {:ok, %Result{}, %__MODULE__{conn: conn}}
-      {:error, _errno, _reason} ->
-        {:error, %__MODULE__{conn: conn}}
+  def handle_commit(opts, %{conn: conn, transaction_status: status} = s) do
+    case Keyword.get(opts, :mode, :transaction) do
+      :transaction when status == :transaction ->
+        case :efirebirdsql_protocol.commit(conn) do
+          :ok ->
+            {:ok, %Result{}, %__MODULE__{conn: conn, transaction_status: :idle}}
+          {:error, _errno, _reason} ->
+            {:error, s}
+        end
+
+      :savepoint when status == :transaction ->
+        case :efirebirdsql_protocol.exec_immediate("RELEASE SAVEPOINT firebirdex_savepoint", conn) do
+          :ok ->
+            {status, s}
+          {:error, _errno, _reason, _conn} ->
+            {:error, s}
+        end
+
+      mode when mode in [:transaction, :savepoint] ->
+        {status, s}
     end
+
   end
 
   @impl true
-  def handle_rollback(_opts, %{conn: conn}) do
-    case :efirebirdsql_protocol.rollback(conn) do
-      :ok ->
-        {:ok, %Result{}, %__MODULE__{conn: conn}}
-      {:error, _errno, _reason} ->
-        {:error, %__MODULE__{conn: conn}}
+  def handle_rollback(opts, %{conn: conn, transaction_status: status} = s) do
+    case Keyword.get(opts, :mode, :transaction) do
+      :transaction when status == :transaction ->
+        case :efirebirdsql_protocol.rollback(conn) do
+          :ok ->
+            {:ok, %Result{}, %__MODULE__{conn: conn, transaction_status: :idle}}
+          {:error, _errno, _reason} ->
+            {:error, s}
+        end
+
+      :savepoint when status == :transaction ->
+        case :efirebirdsql_protocol.exec_immediate("ROLLBACK TO SAVEPOINT firebirdex_savepoint", conn) do
+          :ok ->
+            {status, s}
+          {:error, _errno, _reason, _conn} ->
+            {:error, s}
+        end
+
+      mode when mode in [:transaction, :savepoint] ->
+        {status, s}
     end
+
   end
 
   @impl true
   def handle_status(_opts, s) do
-    # TODO: transaction status treatment
-    {:transaction, s}
+    {s.transaction_status, s}
   end
 
   @impl true
