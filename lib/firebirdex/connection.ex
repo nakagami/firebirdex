@@ -20,7 +20,13 @@ defmodule Firebirdex.Connection do
     database = to_charlist(opts[:database])
     case :efirebirdsql_protocol.connect(hostname, username, password, database, opts) do
       {:ok, conn} ->
-        {:ok, %__MODULE__{conn: conn, transaction_status: :transaction}}
+        auto_commit = Keyword.get(opts, :auto_commit, true)
+        case :efirebirdsql_protocol.begin_transaction(auto_commit, conn) do
+          {:ok, conn} ->
+            {:ok, %__MODULE__{conn: conn, transaction_status: :transaction}}
+          {:error, number, reason, _conn} ->
+            {:error, %Error{number: number, reason: reason}}
+        end
       {:error, number, reason, _conn} ->
         {:error, %Error{number: number, reason: reason}}
     end
