@@ -20,13 +20,7 @@ defmodule Firebirdex.Connection do
     database = to_charlist(opts[:database])
     case :efirebirdsql_protocol.connect(hostname, username, password, database, opts) do
       {:ok, conn} ->
-        auto_commit = Keyword.get(opts, :auto_commit, true)
-        case :efirebirdsql_protocol.begin_transaction(auto_commit, conn) do
-          {:ok, conn} ->
-            {:ok, %__MODULE__{conn: conn, transaction_status: :transaction}}
-          {:error, number, reason, _conn} ->
-            {:error, %Error{number: number, reason: reason}}
-        end
+        {:ok, %__MODULE__{conn: conn, transaction_status: :idle}}
       {:error, number, reason, _conn} ->
         {:error, %Error{number: number, reason: reason}}
     end
@@ -44,17 +38,12 @@ defmodule Firebirdex.Connection do
 
   @impl true
   def ping( %__MODULE__{conn: conn} = state) do
-    sql = "SELECT rdb$get_context('SYSTEM', 'ENGINE_VERSION') from rdb$database"
-    with {:ok,statement} <- :efirebirdsql_protocol.allocate_statement(conn),
-      {:ok,statement} <- :efirebirdsql_protocol.prepare_statement(sql, conn, statement),
-      {:ok,_} <- :efirebirdsql_protocol.execute(conn, statement),
-      {:ok,_} <- :efirebirdsql_protocol.free_statement(conn,statement,:drop)
-    do
-      {:ok,state}
-      # Uncomment following line for testing purposes. It will disonnect/reconnect randomly
-      # if :rand.uniform(5) == 2, do: {:disconnect,__MODULE__,state}, else: {:ok,state}
-    else
-      _ -> {:disconnect,__MODULE__,state}
+    case :efirebirdsql_protocol.allocate_statement(conn) do
+      {:ok, statement} ->
+        {:ok, _} = :efirebirdsql_protocol.free_statement(conn,statement,:drop)
+        {:ok,state}
+      {:error, _, _, _} ->
+        {:disconnect,__MODULE__,state}
     end
   end
 
@@ -67,12 +56,20 @@ defmodule Firebirdex.Connection do
   def handle_prepare(%Query{} = query, _opts, state) do
     charset = econn(state.conn, :charset)
 
-    {:ok, stmt} = :efirebirdsql_protocol.allocate_statement(state.conn)
-    case :efirebirdsql_protocol.prepare_statement(Encoding.from_string!(to_string(query), charset), state.conn, stmt) do
+    conn = if state.transaction_status == :idle do
+      auto_commit = econn(state.conn, :auto_commit)
+      {:ok, new_conn} = :efirebirdsql_protocol.begin_transaction(auto_commit, state.conn)
+      new_conn
+    else
+      state.conn
+    end
+
+    {:ok, stmt} = :efirebirdsql_protocol.allocate_statement(conn)
+    case :efirebirdsql_protocol.prepare_statement(Encoding.from_string!(to_string(query), charset), conn, stmt) do
       {:ok, stmt} ->
-        {:ok, %Query{query | stmt: stmt, charset: charset}, %__MODULE__{state | conn: state.conn}}
+        {:ok, %Query{query | stmt: stmt, charset: charset}, %__MODULE__{state | conn: conn, transaction_status: :transaction}}
       {:error, number, reason} ->
-        {:error, %Error{number: number, reason: reason, statement: query.statement}, %__MODULE__{state | conn: state.conn}}
+        {:error, %Error{number: number, reason: reason, statement: query.statement}, %__MODULE__{state | conn: conn, transaction_status: :transaction}}
     end
   end
 
