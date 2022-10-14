@@ -56,7 +56,7 @@ defmodule Firebirdex.Connection do
   def handle_prepare(%Query{} = query, _opts, state) do
     charset = econn(state.conn, :charset)
 
-    conn = if state.transaction_status == :idle do
+    conn = if econn(state.conn, :trans_handle) == :undefined do
       auto_commit = econn(state.conn, :auto_commit)
       {:ok, new_conn} = :efirebirdsql_protocol.begin_transaction(auto_commit, state.conn)
       new_conn
@@ -137,11 +137,14 @@ defmodule Firebirdex.Connection do
   def handle_begin(opts, %{conn: conn, transaction_status: status} = s) do
     case Keyword.get(opts, :mode, :transaction) do
       :transaction when status == :idle ->
-        case :efirebirdsql_protocol.begin_transaction(false, conn) do
-          {:ok, conn} ->
+        {:ok, %Result{}, %__MODULE__{conn: conn, transaction_status: :transaction}}
+
+      :transaction when status == :transaction ->
+        case :efirebirdsql_protocol.rollback(conn) do
+          :ok ->
             {:ok, %Result{}, %__MODULE__{conn: conn, transaction_status: :transaction}}
-          {:error, _errno, _reason, conn} ->
-            {:error, %__MODULE__{conn: conn, transaction_status: status}}
+          {:error, _errno, _reason} ->
+            {:error, s}
         end
 
       :savepoint when status == :transaction ->
@@ -197,6 +200,7 @@ defmodule Firebirdex.Connection do
       :savepoint when status == :transaction ->
         case :efirebirdsql_protocol.exec_immediate("ROLLBACK TO SAVEPOINT firebirdex_savepoint", conn) do
           :ok ->
+            :efirebirdsql_protocol.exec_immediate("RELEASE SAVEPOINT firebirdex_savepoint", conn)
             {status, s}
           {:error, _errno, _reason, _conn} ->
             {:error, s}
