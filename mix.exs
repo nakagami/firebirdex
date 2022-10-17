@@ -44,11 +44,11 @@ defmodule Firebirdex.Mixfile do
       {:db_connection, "~> 2.4"},
       {:decimal, "~> 2.0"},
       {:timex, "~> 3.7"},
-      {:efirebirdsql, "~> 0.9"},
+      # {:efirebirdsql, "~> 0.9"},
+      {:efirebirdsql, git: "https://github.com/hermanius/efirebirdsql.git"},
       {:codepagex, "~> 0.1.6"},
       {:ex_doc, ">= 0.0.0", only: :dev, runtime: false}
     ]
   end
 
 end
-
