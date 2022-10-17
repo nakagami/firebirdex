@@ -51,4 +51,3 @@ defmodule Firebirdex.Mixfile do
   end
 
 end
-
