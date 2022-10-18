@@ -13,7 +13,7 @@ Add `:firebirdex` to your dependencies:
 ```elixir
 def deps() do
   [
-    {:firebirdex, "~> 0.3"}
+    {:firebirdex, "~> 0.3.5"}
   ]
 end
 ```
