@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-20.04
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Set up Firebird
       run: |
         sudo apt install firebird3.0-server -y
@@ -29,7 +29,7 @@ jobs:
         otp-version: '24.2' # Define the OTP version [required]
         experimental-otp: true
     - name: Restore dependencies cache
-      uses: actions/cache@v2
+      uses: actions/cache@v3
       with:
         path: deps
         key: ${{ runner.os }}-mix-${{ hashFiles('**/mix.lock') }}
