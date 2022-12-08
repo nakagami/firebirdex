@@ -69,6 +69,47 @@ defmodule FirebirdexTest do
       ]
 
     {:ok, _} = Firebirdex.query(conn,
+      "CREATE TABLE many_fields (
+          aaaaaaaaaaaaaaaaaaaaaaaaaaaaa01 INTEGER,
+          aaaaaaaaaaaaaaaaaaaaaaaaaaaaa02 INTEGER,
+          aaaaaaaaaaaaaaaaaaaaaaaaaaaaa03 INTEGER,
+          aaaaaaaaaaaaaaaaaaaaaaaaaaaaa04 INTEGER,
+          aaaaaaaaaaaaaaaaaaaaaaaaaaaaa05 INTEGER,
+          aaaaaaaaaaaaaaaaaaaaaaaaaaaaa06 INTEGER,
+          aaaaaaaaaaaaaaaaaaaaaaaaaaaaa07 INTEGER,
+          aaaaaaaaaaaaaaaaaaaaaaaaaaaaa08 INTEGER,
+          aaaaaaaaaaaaaaaaaaaaaaaaaaaaa09 INTEGER,
+          aaaaaaaaaaaaaaaaaaaaaaaaaaaaa10 INTEGER,
+          aaaaaaaaaaaaaaaaaaaaaaaaaaaaa11 INTEGER,
+          aaaaaaaaaaaaaaaaaaaaaaaaaaaaa12 INTEGER,
+          aaaaaaaaaaaaaaaaaaaaaaaaaaaaa13 INTEGER,
+          aaaaaaaaaaaaaaaaaaaaaaaaaaaaa14 INTEGER,
+          aaaaaaaaaaaaaaaaaaaaaaaaaaaaa15 INTEGER,
+          aaaaaaaaaaaaaaaaaaaaaaaaaaaaa16 INTEGER,
+          aaaaaaaaaaaaaaaaaaaaaaaaaaaaa17 INTEGER,
+          aaaaaaaaaaaaaaaaaaaaaaaaaaaaa18 INTEGER,
+          aaaaaaaaaaaaaaaaaaaaaaaaaaaaa19 INTEGER,
+          aaaaaaaaaaaaaaaaaaaaaaaaaaaaa20 INTEGER,
+          aaaaaaaaaaaaaaaaaaaaaaaaaaaaa21 INTEGER,
+          aaaaaaaaaaaaaaaaaaaaaaaaaaaaa22 INTEGER,
+          aaaaaaaaaaaaaaaaaaaaaaaaaaaaa23 INTEGER,
+          aaaaaaaaaaaaaaaaaaaaaaaaaaaaa24 INTEGER,
+          aaaaaaaaaaaaaaaaaaaaaaaaaaaaa25 INTEGER,
+          aaaaaaaaaaaaaaaaaaaaaaaaaaaaa26 INTEGER,
+          aaaaaaaaaaaaaaaaaaaaaaaaaaaaa27 INTEGER,
+          aaaaaaaaaaaaaaaaaaaaaaaaaaaaa28 INTEGER,
+          aaaaaaaaaaaaaaaaaaaaaaaaaaaaa29 INTEGER,
+          aaaaaaaaaaaaaaaaaaaaaaaaaaaaa30 INTEGER,
+          aaaaaaaaaaaaaaaaaaaaaaaaaaaaa31 INTEGER,
+          aaaaaaaaaaaaaaaaaaaaaaaaaaaaa32 INTEGER
+      )", [])
+    {:ok, %Firebirdex.Result{} = result} = Firebirdex.query(conn,
+      "SELECT * from many_fields", [])
+    assert result.rows == []
+    result = Firebirdex.query!(conn, "SELECT * from many_fields", [])
+    assert result.rows == []
+
+    {:ok, _} = Firebirdex.query(conn,
       "CREATE TABLE charset_test (s VARCHAR(30))", [])
     {:ok, _} = Firebirdex.query(conn, "insert into charset_test (s) values ('テスト1')", [])
     {:ok, _} = Firebirdex.query(conn, "insert into charset_test (s) values (?)", ["テスト2"])
