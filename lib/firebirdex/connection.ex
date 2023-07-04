@@ -130,19 +130,19 @@ defmodule Firebirdex.Connection do
           {:ok, conn} ->
             {:ok, %Result{}, %__MODULE__{conn: conn, transaction_status: :transaction}}
           {:error, _errno, _reason, conn} ->
-            {:error, %__MODULE__{conn: conn, transaction_status: status}}
+            {:error, s}
         end
 
       :savepoint when status == :transaction ->
         case :efirebirdsql_protocol.exec_immediate("SAVEPOINT firebirdex_savepoint", conn) do
           :ok ->
-            {status, s}
+            {:ok, %Result{}, s}
           {:error, _errno, _reason, _conn} ->
             {:error, s}
         end
 
       mode when mode in [:transaction, :savepoint] ->
-        {status, s}
+        {:ok, %Result{}, s}
     end
 
   end
