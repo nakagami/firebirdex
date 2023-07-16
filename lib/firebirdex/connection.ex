@@ -53,13 +53,8 @@ defmodule Firebirdex.Connection do
   def handle_prepare(%Query{} = query, _opts, state) do
     charset = econn(state.conn, :charset)
 
-    {:ok, stmt} = :efirebirdsql_protocol.allocate_statement(state.conn)
-    case :efirebirdsql_protocol.prepare_statement(Encoding.from_string!(to_string(query), charset), state.conn, stmt) do
-      {:ok, stmt} ->
-        {:ok, %Query{query | stmt: stmt, charset: charset}, %__MODULE__{state | conn: state.conn, transaction_status: :transaction}}
-      {:error, number, reason} ->
-        {:error, %Error{number: number, reason: reason, statement: query.statement}, %__MODULE__{state | conn: state.conn, transaction_status: :transaction}}
-    end
+    {:ok, stmt} = :efirebirdsql_protocol.unallocate_statement(to_string(query))
+    {:ok, %Query{query | stmt: stmt, charset: charset}, %__MODULE__{state | conn: state.conn, transaction_status: :transaction}}
   end
 
   defp convert_param(%Decimal{} = value, _charset) do
