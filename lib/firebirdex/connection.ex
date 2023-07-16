@@ -105,7 +105,7 @@ defmodule Firebirdex.Connection do
   end
 
   @impl true
-  def handle_close(query, _opts, state) do
+  def handle_close(_query, _opts, state) do
     {:ok, nil, state}
   end
 
@@ -121,7 +121,7 @@ defmodule Firebirdex.Connection do
         case :efirebirdsql_protocol.begin_transaction(false, conn) do
           {:ok, conn} ->
             {:ok, %Result{}, %__MODULE__{conn: conn, transaction_status: :transaction}}
-          {:error, _errno, _reason, conn} ->
+          {:error, _errno, _reason, _conn} ->
             {:error, s}
         end
 
