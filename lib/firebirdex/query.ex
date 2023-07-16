@@ -86,12 +86,10 @@ defmodule Firebirdex.Query do
     end
 
     def decode(query, result, _opts) do
-      columns = :efirebirdsql_protocol.columns(query.stmt)
-
       rows = if result.rows == nil do
         result.rows
       else
-        Enum.map(result.rows, &(convert_row([], columns, &1, query.charset)))
+        Enum.map(result.rows, &(convert_row([], result.desc, &1, query.charset)))
       end
       %Result{result | rows: rows, num_rows: result.num_rows}
     end
