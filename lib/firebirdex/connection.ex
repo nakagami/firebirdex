@@ -53,13 +53,8 @@ defmodule Firebirdex.Connection do
   def handle_prepare(%Query{} = query, _opts, state) do
     charset = econn(state.conn, :charset)
 
-    {:ok, stmt} = :efirebirdsql_protocol.allocate_statement(state.conn)
-    case :efirebirdsql_protocol.prepare_statement(Encoding.from_string!(to_string(query), charset), state.conn, stmt) do
-      {:ok, stmt} ->
-        {:ok, %Query{query | stmt: stmt, charset: charset}, %__MODULE__{state | conn: state.conn, transaction_status: :transaction}}
-      {:error, number, reason} ->
-        {:error, %Error{number: number, reason: reason, statement: query.statement}, %__MODULE__{state | conn: state.conn, transaction_status: :transaction}}
-    end
+    {:ok, stmt} = :efirebirdsql_protocol.unallocate_statement(to_string(query))
+    {:ok, %Query{query | stmt: stmt, charset: charset}, %__MODULE__{state | conn: state.conn, transaction_status: :transaction}}
   end
 
   defp convert_param(%Decimal{} = value, _charset) do
@@ -102,6 +97,7 @@ defmodule Firebirdex.Connection do
         {:ok, rows, stmt} = :efirebirdsql_protocol.fetchall(state.conn, stmt)
         columns = Enum.map(:efirebirdsql_protocol.columns(stmt), &(column_name(&1)))
         {:ok, num_rows} = :efirebirdsql_protocol.rowcount(state.conn, stmt)
+        {:ok, _conn} = :efirebirdsql_protocol.free_statement(state.conn, stmt, :drop)
         {:ok, %Query{query | stmt: stmt}, %Result{columns: columns, num_rows: num_rows, rows: rows}, %__MODULE__{state | conn: state.conn}}
       {:error, number, reason} ->
         {:error, %Error{number: number, reason: reason, statement: query.statement}, %__MODULE__{state | conn: state.conn}}
@@ -110,11 +106,7 @@ defmodule Firebirdex.Connection do
 
   @impl true
   def handle_close(query, _opts, state) do
-    with {:ok, _conn} <- :efirebirdsql_protocol.free_statement(state.conn, query.stmt, :drop) do
-      {:ok, nil, state}
-    else
-      otherwise -> {:error,otherwise,state}
-    end
+    {:ok, nil, state}
   end
 
   @impl true
