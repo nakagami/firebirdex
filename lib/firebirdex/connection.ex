@@ -144,9 +144,9 @@ defmodule Firebirdex.Connection do
   def handle_commit(opts, %{conn: conn, transaction_status: status} = s) do
     case Keyword.get(opts, :mode, :transaction) do
       :transaction when status == :transaction ->
-        case :efirebirdsql_protocol.commit(conn) do
+        case :efirebirdsql_protocol.commit_retaining(conn) do
           :ok ->
-            {:ok, %Result{}, %__MODULE__{conn: conn, transaction_status: :idle}}
+            {:ok, %Result{}, s}
           {:error, _errno, _reason} ->
             {:error, s}
         end
@@ -154,7 +154,7 @@ defmodule Firebirdex.Connection do
       :savepoint when status == :transaction ->
         case :efirebirdsql_protocol.exec_immediate("RELEASE SAVEPOINT firebirdex_savepoint", conn) do
           :ok ->
-            {status, s}
+            {:ok, %Result{}, s}
           {:error, _errno, _reason, _conn} ->
             {:error, s}
         end
@@ -162,16 +162,15 @@ defmodule Firebirdex.Connection do
       mode when mode in [:transaction, :savepoint] ->
         {status, s}
     end
-
   end
 
   @impl true
   def handle_rollback(opts, %{conn: conn, transaction_status: status} = s) do
     case Keyword.get(opts, :mode, :transaction) do
       :transaction when status == :transaction ->
-        case :efirebirdsql_protocol.rollback(conn) do
+        case :efirebirdsql_protocol.rollback_retaining(conn) do
           :ok ->
-            {:ok, %Result{}, %__MODULE__{conn: conn, transaction_status: :idle}}
+            {:ok, %Result{}, s}
           {:error, _errno, _reason} ->
             {:error, s}
         end
@@ -179,7 +178,7 @@ defmodule Firebirdex.Connection do
       :savepoint when status == :transaction ->
         case :efirebirdsql_protocol.exec_immediate("ROLLBACK TO SAVEPOINT firebirdex_savepoint", conn) do
           :ok ->
-            {status, s}
+            {:ok, %Result{}, s}
           {:error, _errno, _reason, _conn} ->
             {:error, s}
         end
@@ -187,7 +186,6 @@ defmodule Firebirdex.Connection do
       mode when mode in [:transaction, :savepoint] ->
         {status, s}
     end
-
   end
 
   @impl true
