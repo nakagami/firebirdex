@@ -1,4 +1,4 @@
-use Mix.Config
+import Config
 config :codepagex, :encodings, [
   :"VENDORS/MICSFT/WINDOWS/CP932",
   :"VENDORS/MICSFT/PC/CP737",
