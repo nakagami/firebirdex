@@ -2,9 +2,9 @@ name: Elixir CI
 
 on:
   push:
-    branches: [ master ]
+    branches: [ "master" ]
   pull_request:
-    branches: [ master ]
+    branches: [ "master" ]
 
 jobs:
   build:
@@ -13,8 +13,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout sources
-      uses: actions/checkout@v3
+    - uses: actions/checkout@v3
     - name: Setup FirebirdSQL container
       uses: juarezr/firebirdsql-github-action@v1.2.0
       with:
@@ -23,9 +22,8 @@ jobs:
     - name: Set up Elixir
       uses: erlef/setup-beam@v1
       with:
-        elixir-version: '1.12.2' # Define the elixir version [required]
-        otp-version: '24.2' # Define the OTP version [required]
-        experimental-otp: true
+        elixir-version: '1.15.2' # Define the elixir version [required]
+        otp-version: '26.2' # Define the OTP version [required]
     - name: Restore dependencies cache
       uses: actions/cache@v3
       with:
