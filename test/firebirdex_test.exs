@@ -61,11 +61,11 @@ defmodule FirebirdexTest do
     assert result.rows == []
 
     {:ok, _} = Firebirdex.query(conn,
-      "INSERT INTO foo (a, b, c, d) VALUES (1, 'A', NULL, NULL)", [])
+      "INSERT INTO foo (a, b, c, d) VALUES (1, 'A', '', NULL)", [])
     {:ok, %Firebirdex.Result{} = result} = Firebirdex.query(conn,
       "SELECT c, d FROM foo", [])
       assert result.rows == [
-        [nil, nil]
+        ["", nil]
       ]
 
     {:ok, _} = Firebirdex.query(conn,
