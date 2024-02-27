@@ -52,8 +52,10 @@ defmodule Firebirdex.Query do
       v
     end
     defp convert_value({_, :timestamp, _, _, _}, {_name, {{year, month, day}, {hour, minute, second, microsecond}}}, _charset) do
-      {:ok, v} = NaiveDateTime.new(year, month, day, hour, minute, second, microsecond)
-      v
+      case NaiveDateTime.new(year, month, day, hour, minute, second, microsecond) do
+          {:ok, datetime} -> datetime
+          {:error, _} -> nil # Treat invalid timestamps as nil
+        end
     end
     defp convert_value({_, :time_tz, _, _, _}, {_name, {{hour, minute, second, microsecond}, tz, offset}}, _charset) do
       d = Date.utc_today
