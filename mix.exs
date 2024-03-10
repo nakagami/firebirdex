@@ -42,7 +42,7 @@ defmodule Firebirdex.Mixfile do
   defp deps() do
     [
       {:db_connection, "~> 2.4"},
-      {:decimal, "~> 2.0"},
+      {:decimal, "~> 2.1"},
       {:timex, "~> 3.7"},
       {:efirebirdsql, "~> 0.9"},
       {:codepagex, "~> 0.1.6"},
