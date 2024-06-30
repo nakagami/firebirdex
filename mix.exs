@@ -45,7 +45,7 @@ defmodule Firebirdex.Mixfile do
       {:decimal, "~> 2.1"},
       {:timex, "~> 3.7"},
       {:efirebirdsql, "~> 0.9"},
-      {:codepagex, "~> 0.1.6"},
+      {:codepagex, "~> 0.1.9"},
       {:ex_doc, ">= 0.0.0", only: :dev, runtime: false}
     ]
   end
