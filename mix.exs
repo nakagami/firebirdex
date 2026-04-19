@@ -7,7 +7,7 @@ defmodule Firebirdex.Mixfile do
     [
       app: :firebirdex,
       version: @version,
-      elixir: "~> 1.4",
+      elixir: "~> 1.18",
       name: "Firebirdex",
       description: "Firebird driver for Elixir",
       source_url: "https://github.com/nakagami/firebirdex",
@@ -41,11 +41,11 @@ defmodule Firebirdex.Mixfile do
 
   defp deps() do
     [
-      {:db_connection, "~> 2.4"},
-      {:decimal, "~> 2.1"},
+      {:db_connection, "~> 2.9"},
+      {:decimal, "~> 2.3"},
       {:timex, "~> 3.7"},
       {:efirebirdsql, "~> 0.9"},
-      {:codepagex, "~> 0.1.9"},
+      {:codepagex, "~> 0.1"},
       {:ex_doc, ">= 0.0.0", only: :dev, runtime: false}
     ]
   end
