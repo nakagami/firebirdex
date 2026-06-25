@@ -94,12 +94,20 @@ defmodule Firebirdex.Connection do
     params = Enum.map(params, &convert_param(&1, econn(state.conn, :charset)))
     case :efirebirdsql_protocol.execute(state.conn, query.stmt, params) do
       {:ok, stmt} ->
-        {:ok, rows, stmt} = :efirebirdsql_protocol.fetchall(state.conn, stmt)
-        desc = :efirebirdsql_protocol.columns(stmt)
-        columns = Enum.map(desc, &(column_name(&1)))
-        {:ok, num_rows} = :efirebirdsql_protocol.rowcount(state.conn, stmt)
-        {:ok, stmt} = :efirebirdsql_protocol.free_statement(state.conn, stmt, :drop)
-        {:ok, %Query{query | stmt: stmt}, %Result{desc: desc, columns: columns, num_rows: num_rows, rows: rows}, %__MODULE__{state | conn: state.conn}}
+        # efirebirdsql can return {:error, ...} mid-read from fetchall/rowcount/free_statement
+        # when the server reports an error while retrieving rows. A strict `=` match crashed the
+        # connection process with {badmatch, {:error,...}}, hiding the real SQL error. Route any
+        # of them to the same error clause used by `execute`. The success path is unchanged.
+        with {:ok, rows, stmt} <- :efirebirdsql_protocol.fetchall(state.conn, stmt),
+             desc = :efirebirdsql_protocol.columns(stmt),
+             columns = Enum.map(desc, &column_name(&1)),
+             {:ok, num_rows} <- :efirebirdsql_protocol.rowcount(state.conn, stmt),
+             {:ok, stmt} <- :efirebirdsql_protocol.free_statement(state.conn, stmt, :drop) do
+          {:ok, %Query{query | stmt: stmt}, %Result{desc: desc, columns: columns, num_rows: num_rows, rows: rows}, %__MODULE__{state | conn: state.conn}}
+        else
+          {:error, number, reason} ->
+            {:error, %Error{number: number, reason: reason, statement: query.statement}, %__MODULE__{state | conn: state.conn}}
+        end
       {:error, number, reason} ->
         {:error, %Error{number: number, reason: reason, statement: query.statement}, %__MODULE__{state | conn: state.conn}}
     end
