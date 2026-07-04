@@ -29,7 +29,8 @@ defmodule Firebirdex.Connection do
   end
 
   @impl true
-  def disconnect(_reason,  %__MODULE__{conn: conn}) do
+  def disconnect(_reason,  %__MODULE__{conn: conn} = s) do
+    IO.puts("[FIREBIRDEX] disconnect status=#{s.transaction_status} self=#{inspect(self())}")
     case :efirebirdsql_protocol.close(conn) do
       {:ok, _conn} ->
         :ok
@@ -127,7 +128,9 @@ defmodule Firebirdex.Connection do
 
   @impl true
   def handle_begin(opts, %{conn: conn, transaction_status: status, savepoint_counter: counter, savepoints: savepoints} = s) do
-    case Keyword.get(opts, :mode, :transaction) do
+    mode = Keyword.get(opts, :mode, :transaction)
+    IO.puts("[FIREBIRDEX] handle_begin mode=#{mode} status=#{status} self=#{inspect(self())}")
+    case mode do
       :transaction when status == :idle ->
         case :efirebirdsql_protocol.begin_transaction(false, conn) do
           {:ok, conn} ->
@@ -158,11 +161,13 @@ defmodule Firebirdex.Connection do
 
   @impl true
   def handle_commit(opts, %{conn: conn, transaction_status: status, savepoints: savepoints} = s) do
-    case Keyword.get(opts, :mode, :transaction) do
+    mode = Keyword.get(opts, :mode, :transaction)
+    IO.puts("[FIREBIRDEX] handle_commit mode=#{mode} status=#{status} self=#{inspect(self())}")
+    case mode do
       :transaction when status == :transaction ->
-        case :efirebirdsql_protocol.commit_retaining(conn) do
+        case :efirebirdsql_protocol.commit(conn) do
           :ok ->
-            {:ok, %Result{}, s}
+            {:ok, %Result{}, %__MODULE__{s | transaction_status: :idle}}
           {:error, _errno, _reason} ->
             {:error, s}
         end
@@ -193,11 +198,13 @@ defmodule Firebirdex.Connection do
 
   @impl true
   def handle_rollback(opts, %{conn: conn, transaction_status: status, savepoints: savepoints} = s) do
-    case Keyword.get(opts, :mode, :transaction) do
+    mode = Keyword.get(opts, :mode, :transaction)
+    IO.puts("[FIREBIRDEX] handle_rollback mode=#{mode} status=#{status} self=#{inspect(self())}")
+    case mode do
       :transaction when status == :transaction ->
-        case :efirebirdsql_protocol.rollback_retaining(conn) do
+        case :efirebirdsql_protocol.rollback(conn) do
           :ok ->
-            {:ok, %Result{}, s}
+            {:ok, %Result{}, %__MODULE__{s | transaction_status: :idle}}
           {:error, _errno, _reason} ->
             {:error, s}
         end
