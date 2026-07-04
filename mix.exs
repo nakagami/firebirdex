@@ -20,6 +20,7 @@ defmodule Firebirdex.Mixfile do
   def application() do
     [
       extra_applications: [:logger],
+      mod: {Firebirdex.Application, []}
     ]
   end
 
@@ -43,9 +44,9 @@ defmodule Firebirdex.Mixfile do
     [
       {:db_connection, "~> 2.10"},
       {:decimal, "~> 3.1"},
-      {:timex, "~> 3.7"},
       {:efirebirdsql, "~> 0.9"},
       {:codepagex, "~> 0.1"},
+      {:tz, "~> 0.28"},
       {:ex_doc, "~> 0.40", only: :dev, runtime: false}
     ]
   end
