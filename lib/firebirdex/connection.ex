@@ -114,13 +114,67 @@ defmodule Firebirdex.Connection do
     param
   end
 
+  # Converting a string parameter can fail: `Encoding.from_string!/2` raises `Codepagex.Error`
+  # for any codepoint the connection charset cannot represent. With `charset: :iso8859_1` that
+  # is everything above U+00FF -- em dashes, curly quotes, ellipses, the euro sign, emoji: what
+  # comes out of pasting from a word processor or a PDF.
+  #
+  # That happens client side, before the statement is sent, so raising from inside this callback
+  # left the caller with an exception where every other failure is a result. `Ecto.Adapters.SQL.query/4`
+  # had no error tuple to return, and callers could not treat it like any other failed query.
+  #
+  # Route it to the same `{:error, %Error{}, state}` the `execute` and `fetchall` branches below
+  # already return. The parameter is NOT sanitized, transliterated or truncated: silently rewriting
+  # a value the caller passed in would be worse than failing.
+  defp convert_params(params, charset) do
+    {:ok, Enum.map(params, &convert_param(&1, charset))}
+  rescue
+    Codepagex.Error ->
+      {:error, unencodable_error(params, charset)}
+  end
+
+  # isc_malformed_string -- the same condition the server reports when a string cannot be
+  # represented in the connection charset.
+  @isc_malformed_string 335_544_849
+
+  defp unencodable_error(params, charset) do
+    chars =
+      params
+      |> Enum.filter(&is_binary/1)
+      |> Enum.flat_map(&String.to_charlist/1)
+      |> Enum.reject(&encodable?(&1, charset))
+      |> Enum.uniq()
+
+    %Error{
+      number: @isc_malformed_string,
+      reason:
+        "Malformed string: #{inspect(List.to_string(chars))} cannot be encoded as #{charset}"
+    }
+  end
+
+  defp encodable?(codepoint, charset) do
+    _ = Encoding.from_string!(<<codepoint::utf8>>, charset)
+    true
+  rescue
+    Codepagex.Error -> false
+  end
+
   defp column_name({name, _type, _scale, _length, _isnull}) do
     name
   end
 
   @impl true
-  def handle_execute(%Query{} = query, params, _opts, state) do
-    params = Enum.map(params, &convert_param(&1, econn(state.conn, :charset)))
+  def handle_execute(%Query{} = query, params, opts, state) do
+    case convert_params(params, econn(state.conn, :charset)) do
+      {:ok, params} ->
+        execute_converted(query, params, opts, state)
+
+      {:error, %Error{} = error} ->
+        {:error, %Error{error | statement: query.statement}, %__MODULE__{state | conn: state.conn}}
+    end
+  end
+
+  defp execute_converted(%Query{} = query, params, _opts, state) do
     case :efirebirdsql_protocol.execute(state.conn, query.stmt, params) do
       {:ok, stmt} ->
         # efirebirdsql can return {:error, ...} mid-read from fetchall/rowcount/free_statement
