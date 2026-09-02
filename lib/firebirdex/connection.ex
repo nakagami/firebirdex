@@ -263,6 +263,8 @@ defmodule Firebirdex.Connection do
                 {:ok, %Result{}, s}
               {:error, 335544820, _reason, _conn} ->
                 {:ok, %Result{}, s}
+              {:error, 335544820, _reason} ->
+                {:ok, %Result{}, s}
               {:error, _errno, _reason, _conn} ->
                 {:error, s}
               {:error, _errno, _reason} ->
@@ -298,6 +300,8 @@ defmodule Firebirdex.Connection do
               :ok ->
                 {:ok, %Result{}, s}
               {:error, 335544820, _reason, _conn} ->
+                {:ok, %Result{}, s}
+              {:error, 335544820, _reason} ->
                 {:ok, %Result{}, s}
               {:error, _errno, _reason, _conn} ->
                 {:error, s}
