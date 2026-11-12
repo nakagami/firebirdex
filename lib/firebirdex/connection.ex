@@ -218,10 +218,10 @@ defmodule Firebirdex.Connection do
         case :efirebirdsql_protocol.begin_transaction(false, conn) do
           {:ok, conn} ->
             {:ok, %Result{}, %__MODULE__{conn: conn, transaction_status: :transaction, savepoint_counter: counter, savepoints: savepoints}}
-          {:error, _errno, _reason, _conn} ->
-            {:error, s}
-          {:error, _errno, _reason} ->
-            {:error, s}
+          {:error, errno, reason, _conn} ->
+            {:disconnect, %Error{number: errno, reason: reason}, s}
+          {:error, errno, reason} ->
+            {:disconnect, %Error{number: errno, reason: reason}, s}
         end
 
       :savepoint when status == :transaction ->
@@ -250,8 +250,12 @@ defmodule Firebirdex.Connection do
         case :efirebirdsql_protocol.commit(conn) do
           :ok ->
             rebase_autocommit(s)
-          {:error, _errno, _reason} ->
-            {:error, s}
+          # After a failed COMMIT/ROLLBACK (or BEGIN) the transaction state is unknown and the
+          # socket may be gone, so let DBConnection drop the connection. A bare {:error, s} is
+          # the "can not commit due to transaction status" reply, which callers such as Ecto's
+          # SQL sandbox do not handle. Same in handle_begin/2 and handle_rollback/2.
+          {:error, errno, reason} ->
+            {:disconnect, %Error{number: errno, reason: reason}, s}
         end
 
       :savepoint when status == :transaction ->
@@ -288,8 +292,8 @@ defmodule Firebirdex.Connection do
         case :efirebirdsql_protocol.rollback(conn) do
           :ok ->
             rebase_autocommit(s)
-          {:error, _errno, _reason} ->
-            {:error, s}
+          {:error, errno, reason} ->
+            {:disconnect, %Error{number: errno, reason: reason}, s}
         end
 
       :savepoint when status == :transaction ->
