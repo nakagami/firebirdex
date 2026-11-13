@@ -115,6 +115,40 @@ defmodule FirebirdexTest do
     GenServer.stop(conn)
   end
 
+  # TIME and TIMESTAMP parameters keep their fraction of a second. Firebird stores
+  # 1/10000 s, so the last two microsecond digits are truncated (.656789 -> .6567).
+  test "time_and_timestamp_params_keep_subseconds" do
+    {:ok, conn} = Firebirdex.start_link(@opts)
+
+    {:ok, _} = Firebirdex.query(conn,
+      "CREATE TABLE subsecond_test (id INTEGER NOT NULL, ts TIMESTAMP, t TIME, PRIMARY KEY (id))", [])
+
+    {:ok, _} = Firebirdex.query(conn,
+      "INSERT INTO subsecond_test (id, ts, t) VALUES (?, ?, ?)",
+      [1, ~N[2026-10-01 17:01:56.656], ~T[12:34:56.656]])
+    {:ok, _} = Firebirdex.query(conn,
+      "INSERT INTO subsecond_test (id, ts, t) VALUES (?, ?, ?)",
+      [2, ~N[2026-10-01 17:01:56.656789], ~T[12:34:56.656789]])
+    {:ok, _} = Firebirdex.query(conn,
+      "INSERT INTO subsecond_test (id, ts) VALUES (?, ?)",
+      [3, DateTime.from_naive!(~N[2026-10-01 17:01:56.656], "Etc/UTC")])
+
+    {:ok, %Firebirdex.Result{} = result} = Firebirdex.query(conn,
+      "SELECT id, CAST(ts AS VARCHAR(30)), CAST(t AS VARCHAR(20)) FROM subsecond_test ORDER BY id", [])
+
+    assert result.rows == [
+      [1, "2026-10-01 17:01:56.6560", "12:34:56.6560"],
+      [2, "2026-10-01 17:01:56.6567", "12:34:56.6567"],
+      [3, "2026-10-01 17:01:56.6560", nil]
+    ]
+
+    {:ok, %Firebirdex.Result{} = result} = Firebirdex.query(conn,
+      "SELECT ts, t FROM subsecond_test WHERE id = 1", [])
+    assert result.rows == [[~N[2026-10-01 17:01:56.656000], ~T[12:34:56.656000]]]
+
+    GenServer.stop(conn)
+  end
+
   # When COMMIT or ROLLBACK fails, the transaction state is unknown, so the callback must
   # return {:disconnect, exception, state}. A bare {:error, state} is the "can not commit
   # due to transaction status" reply, which callers such as Ecto's SQL sandbox do not
