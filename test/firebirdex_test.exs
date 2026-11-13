@@ -115,6 +115,26 @@ defmodule FirebirdexTest do
     GenServer.stop(conn)
   end
 
+  # When COMMIT or ROLLBACK fails, the transaction state is unknown, so the callback must
+  # return {:disconnect, exception, state}. A bare {:error, state} is the "can not commit
+  # due to transaction status" reply, which callers such as Ecto's SQL sandbox do not
+  # expect from a :transaction connection.
+  test "transaction_end_failure_disconnects" do
+    for callback <- [:handle_commit, :handle_rollback] do
+      {:ok, state} = Firebirdex.Connection.connect(TestHelpers.opts())
+      {:ok, _, state} = Firebirdex.Connection.handle_begin([], state)
+      # Close the transaction behind the driver's back, so the server rejects the next
+      # COMMIT/ROLLBACK on that handle.
+      :ok = :efirebirdsql_protocol.rollback(state.conn)
+
+      assert {:disconnect, %Firebirdex.Error{number: number}, state} =
+               apply(Firebirdex.Connection, callback, [[], state])
+      assert is_integer(number)
+
+      Firebirdex.Connection.disconnect(:test_done, state)
+    end
+  end
+
   test "encoding_test" do
     assert Firebirdex.Encoding.from_string!("", :utf_8) == ""
     assert Firebirdex.Encoding.from_string!("", :cp932) == ""
