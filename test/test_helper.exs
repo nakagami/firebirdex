@@ -3,7 +3,7 @@ ExUnit.start()
 defmodule TestHelpers do
   def opts() do 
     database = :lists.flatten(
-      :io_lib.format("/tmp/~p.fdb", [:erlang.system_time()]))
+      :io_lib.format("/tmp/~p_~p.fdb", [:erlang.system_time(), :erlang.unique_integer([:positive])]))
     [
       hostname: "localhost",
       username: System.get_env("ISC_USER", "sysdba"),

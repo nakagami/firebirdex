@@ -1,11 +1,8 @@
 defmodule FirebirdexTest do
   use ExUnit.Case, async: true
 
-  @opts TestHelpers.opts()
-
   test "connect_test" do
-    opts = @opts
-    {:ok, conn} = Firebirdex.start_link(opts)
+    {:ok, conn} = Firebirdex.start_link(TestHelpers.opts())
 
     {:ok, %Firebirdex.Result{} = result} = Firebirdex.query(conn,
       "SELECT
@@ -118,7 +115,7 @@ defmodule FirebirdexTest do
   # TIME and TIMESTAMP parameters keep their fraction of a second. Firebird stores
   # 1/10000 s, so the last two microsecond digits are truncated (.656789 -> .6567).
   test "time_and_timestamp_params_keep_subseconds" do
-    {:ok, conn} = Firebirdex.start_link(@opts)
+    {:ok, conn} = Firebirdex.start_link(TestHelpers.opts())
 
     {:ok, _} = Firebirdex.query(conn,
       "CREATE TABLE subsecond_test (id INTEGER NOT NULL, ts TIMESTAMP, t TIME, PRIMARY KEY (id))", [])
