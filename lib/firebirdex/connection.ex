@@ -94,16 +94,22 @@ defmodule Firebirdex.Connection do
     {d.year, d.month, d.day}
   end
 
+  # The fraction of a second travels as microseconds. Firebird keeps TIME and
+  # TIMESTAMP in units of 1/10000 s, and efirebirdsql converts with
+  # `Microsecond div 100` (`efirebirdsql_conv:param_to_time/4`), so anything below
+  # 100 microseconds is truncated, not rounded: ~T[12:34:56.656789] is stored as
+  # 12:34:56.6567. Before this, the fraction was always sent as 0 and every
+  # TIME/TIMESTAMP parameter lost it, while reading it back kept it.
   defp convert_param(%Time{} = t, _charset) do
-    {t.hour, t.minute, t.second, 0}
+    {t.hour, t.minute, t.second, microseconds(t)}
   end
 
   defp convert_param(%NaiveDateTime{} = dt, _charset) do
-    {{dt.year, dt.month, dt.day}, {dt.hour, dt.minute, dt.second, 0}}
+    {{dt.year, dt.month, dt.day}, {dt.hour, dt.minute, dt.second, microseconds(dt)}}
   end
 
   defp convert_param(%DateTime{} = dt, _charset) do
-    {{dt.year, dt.month, dt.day}, {dt.hour, dt.minute, dt.second, 0}}
+    {{dt.year, dt.month, dt.day}, {dt.hour, dt.minute, dt.second, microseconds(dt)}}
   end
 
   defp convert_param(param, charset) when is_binary(param) do
@@ -113,6 +119,8 @@ defmodule Firebirdex.Connection do
   defp convert_param(param, _charset) do
     param
   end
+
+  defp microseconds(%{microsecond: {microsecond, _precision}}), do: microsecond
 
   # Converting a string parameter can fail: `Encoding.from_string!/2` raises `Codepagex.Error`
   # for any codepoint the connection charset cannot represent. With `charset: :iso8859_1` that
